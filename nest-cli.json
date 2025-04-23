@@ -1,8 +1,77 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/cloud-project/src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/cloud-project/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/cloud-project",
+  "projects": {
+    "authorities-service": {
+      "type": "application",
+      "root": "apps/authorities-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/authorities-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/authorities-service/tsconfig.app.json"
+      }
+    },
+    "cloud-project": {
+      "type": "application",
+      "root": "apps/cloud-project",
+      "entryFile": "main",
+      "sourceRoot": "apps/cloud-project/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/cloud-project/tsconfig.app.json"
+      }
+    },
+    "road-event-service": {
+      "type": "application",
+      "root": "apps/road-event-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/road-event-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/road-event-service/tsconfig.app.json"
+      }
+    },
+    "road-location-service": {
+      "type": "application",
+      "root": "apps/road-location-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/road-location-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/road-location-service/tsconfig.app.json"
+      }
+    },
+    "satistics-service": {
+      "type": "application",
+      "root": "apps/satistics-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/satistics-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/satistics-service/tsconfig.app.json"
+      }
+    },
+    "user-data-service": {
+      "type": "application",
+      "root": "apps/user-data-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-data-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user-data-service/tsconfig.app.json"
+      }
+    },
+    "user-location-service": {
+      "type": "application",
+      "root": "apps/user-location-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-location-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user-location-service/tsconfig.app.json"
+      }
+    }
   }
 }
