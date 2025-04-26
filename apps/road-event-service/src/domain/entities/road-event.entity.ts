@@ -21,11 +21,11 @@ export class RoadEventEntity {
   @Column('bigint', { name: 'userId' })
   userId: number;
 
-  @Column('double precision')
-  latitude: number;
+  @Column('double precision' , { nullable: true })
+  latitude?: number;
 
-  @Column('double precision')
-  longitude: number;
+  @Column('double precision', { nullable: true })
+  longitude?: number;
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   @Column({ type: 'enum', enum: RoadEventType, enumName: 'road_event_type' })
