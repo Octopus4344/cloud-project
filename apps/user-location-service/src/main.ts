@@ -1,8 +1,31 @@
 import { NestFactory } from '@nestjs/core';
-import { UserLocationServiceModule } from './user-location-service.module';
+import { AppModule } from './app.module';
+import { Transport, MicroserviceOptions } from '@nestjs/microservices';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(UserLocationServiceModule);
-  await app.listen(process.env.port ?? 3000);
+  const app = await NestFactory.create(AppModule);
+
+  const rabbitMQUrl = process.env.RABBITMQ_URL;
+  if (!rabbitMQUrl) {
+    throw new Error('RABBITMQ_URL is not defined');
+  }
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [rabbitMQUrl],
+      queue: 'user-loc-queue',
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
+  await app.startAllMicroservices();
+  await app.listen(3004);
+  Logger.log('User Data Service is running on port 3004');
+  // console.log('Road Event Service is running on port 4000');
+  // console.log(
+  //   `Application road event service is running on: ${await app.getUrl()}`,
+  // );
 }
 bootstrap();

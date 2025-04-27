@@ -14,6 +14,7 @@ export class PublishRoadEventHandler
     private readonly roadEventRepository: RoadEventRepository,
     private readonly statusRepository: StatusRepository,
     @Inject('RMQ_EVENTS_BUS') private readonly rmq: ClientProxy,
+    @Inject('RMQ_LOC_BUS') private readonly rmqLoc: ClientProxy,
   ) {}
 
   async execute(command: PublishRoadEventCommand) {
@@ -34,7 +35,16 @@ export class PublishRoadEventHandler
     Logger.log('Publishing event:', created);
     const result = this.rmq.emit('road.event.created', created);
     result.subscribe({
-      next: (response) => Logger.log('Event published successfully:', response),
+      next: (response) => Logger.log('Event published successfully to user queue:', response),
+      error: (error) =>
+        Logger.error(
+          'Error publishing event:',
+          error.stack ?? JSON.stringify(error),
+        ),
+    });
+    const resultLoc = this.rmqLoc.emit('road.event.created', created);
+    resultLoc.subscribe({
+      next: (response) => Logger.log('Event published successfully to location queue:', response),
       error: (error) =>
         Logger.error(
           'Error publishing event:',

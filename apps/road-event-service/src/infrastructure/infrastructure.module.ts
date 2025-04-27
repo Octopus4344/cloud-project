@@ -32,6 +32,19 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           },
         }),
       },
+      {
+        name: 'RMQ_LOC_BUS',
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [config.get<string>('RABBITMQ_URL')!],
+            queue: 'user-loc-queue',
+            queueOptions: { durable: true },
+          },
+        }),
+      },
     ]),
   ],
   providers: [
