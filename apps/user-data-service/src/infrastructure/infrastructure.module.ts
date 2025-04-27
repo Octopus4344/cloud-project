@@ -6,25 +6,31 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { UserRepository } from './repositories/user.repository';
 import { UserEntity } from '../domain/entities/user.entity';
 import { RoadEventCreatedHandler } from './event-handlers/road-event-created.handler';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     CqrsModule,
     TypeOrmModule.forFeature([UserEntity]),
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
-        name: 'RMQ_EVENTS_BUS',
-        transport: Transport.RMQ,
-        options: {
-          urls: [process.env.RABBITMQ_URL!],
-          queue: 'road-event-queue',
-          queueOptions: {
-            durable: true,
+        name: 'RMQ_USERS_BUS',
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [config.get<string>('RABBITMQ_URL')!],
+            queueOptions: { durable: true },
+            queue: 'road-event-queue',
           },
-        },
+        }),
       },
     ]),
   ],
+  controllers: [RoadEventCreatedHandler],
   providers: [UserRepository, RoadEventCreatedHandler],
+  exports: [UserRepository, RoadEventCreatedHandler],
 })
 export class InfrastructureModule {}

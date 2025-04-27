@@ -1,17 +1,17 @@
 import { ClientProxy, EventPattern } from '@nestjs/microservices';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Controller, Inject, Injectable, Logger } from '@nestjs/common';
 import { UserDataProvidedEvent } from '../../domain/events/user-data-provided.event';
 import { UserRepository } from '../repositories/user.repository';
 
-@Injectable()
+@Controller()
 export class RoadEventCreatedHandler {
   constructor(
     private readonly userRepository: UserRepository,
-    @Inject('RMQ_EVENTS_BUS') private readonly rmq: ClientProxy,
+    @Inject('RMQ_USERS_BUS') private readonly rmq: ClientProxy,
   ) {}
 
   @EventPattern('road.event.created')
-  async handle(msg: {id: number, userId: number}) {
+  async handle(msg: {id: number, userId: number, eventType: string, latitude: number | null, longitude: number | null}) {
     Logger.log('Received event:', msg);
     const user = await this.userRepository.findById(msg.userId);
     if (!user) {
