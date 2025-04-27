@@ -3,6 +3,7 @@ import { PublishRoadEventCommand } from '../../domain/commands/publish-road-even
 import { RoadEventRepository } from '../repositories/road-event.repository';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { RoadEventCreatedEvent } from '../../domain/events/road-event-created.event';
 
 @CommandHandler(PublishRoadEventCommand)
 export class PublishRoadEventHandler
@@ -10,23 +11,29 @@ export class PublishRoadEventHandler
 {
   constructor(
     private readonly roadEventRepository: RoadEventRepository,
+    private readonly statusRepository: RoadEventRepository,
     @Inject('RMQ_EVENTS_BUS') private readonly rmq: ClientProxy,
   ) {}
 
   async execute(command: PublishRoadEventCommand) {
+    const e = await this.statusRepository.save({
+      userId: command.userId,
+      eventType: command.eventType,
+    });
     const entity = await this.roadEventRepository.save({
       userId: command.userId,
       latitude: command.latitude,
       longitude: command.longitude,
       eventType: command.eventType,
     });
-    this.rmq.emit('road.event.created', {
-      eventId: entity.id,
-      userId: entity.userId,
-      latitude: entity.latitude,
-      longitude: entity.longitude,
-      eventType: entity.eventType,
-    });
+    const created = new RoadEventCreatedEvent(
+      entity.id,
+      entity.userId,
+      entity.eventType,
+      entity.latitude,
+      entity.longitude,
+    );
+    this.rmq.emit('road.event.created', created);
     return entity.id;
   }
 }

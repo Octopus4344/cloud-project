@@ -6,11 +6,15 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RoadEventEntity } from '../domain/entities/road-event.entity';
 import { RoadEventRepository } from './repositories/road-event.repository';
 import { PublishRoadEventHandler } from './command-handlers/publish-road-event.handler';
+import { EventStatusEntity } from '../domain/entities/event-status.entity';
+import { StatusRepository } from './repositories/status.repository';
+import { AggregateService } from './services/aggregate.service';
+import { UserDataProvidedHandler } from './event-handlers/user-data-provided.handler';
 
 @Module({
   imports: [
     CqrsModule,
-    TypeOrmModule.forFeature([RoadEventEntity]),
+    TypeOrmModule.forFeature([RoadEventEntity, EventStatusEntity]),
     ClientsModule.register([
       {
         name: 'RMQ_EVENTS_BUS',
@@ -25,7 +29,7 @@ import { PublishRoadEventHandler } from './command-handlers/publish-road-event.h
       },
     ]),
   ],
-  providers: [RoadEventRepository, PublishRoadEventHandler],
+  providers: [RoadEventRepository, StatusRepository, AggregateService, PublishRoadEventHandler, UserDataProvidedHandler, UserDataProvidedHandler],
   exports: [PublishRoadEventHandler],
 })
 export class InfrastructureModule {}

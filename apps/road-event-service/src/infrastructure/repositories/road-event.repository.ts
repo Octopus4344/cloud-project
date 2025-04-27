@@ -15,4 +15,8 @@ export class RoadEventRepository {
       this.roadEventRepository.create(partial),
     );
   }
+
+  findOne(id: number) {
+    return this.roadEventRepository.findOneBy({ id });
+  }
 }

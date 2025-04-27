@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApiModule } from './api/api.module';
 import * as process from 'node:process';
+import { InfrastructureModule } from './infrastructure/infrastructure.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import * as process from 'node:process';
       }),
     }),
     ApiModule,
+    InfrastructureModule
   ],
 })
 export class AppModule {}
