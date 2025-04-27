@@ -14,7 +14,7 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [rabbitMQUrl],
-      queue: 'road-event-queue',
+      queue: 'user-data-queue',
       queueOptions: {
         durable: true,
       },

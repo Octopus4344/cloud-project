@@ -24,6 +24,16 @@ export class RoadEventCreatedHandler {
       user.birthDate,
       user.phoneNumber,
     );
-    this.rmq.emit('user.data.provided', event);
+
+    Logger.log('Publishing event:', event);
+    const result = this.rmq.emit('user.data.provided', event);
+    result.subscribe({
+      next: (response) => Logger.log('Event published successfully:', response),
+      error: (error) =>
+        Logger.error(
+          'Error publishing event:',
+          error.stack ?? JSON.stringify(error),
+        ),
+    });
   }
 }

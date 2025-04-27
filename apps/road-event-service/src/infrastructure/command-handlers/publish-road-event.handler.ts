@@ -35,7 +35,11 @@ export class PublishRoadEventHandler
     const result = this.rmq.emit('road.event.created', created);
     result.subscribe({
       next: (response) => Logger.log('Event published successfully:', response),
-      error: (error) => Logger.error('Error publishing event:', error.stack ?? JSON.stringify(error)),
+      error: (error) =>
+        Logger.error(
+          'Error publishing event:',
+          error.stack ?? JSON.stringify(error),
+        ),
     });
     return entity.id;
   }

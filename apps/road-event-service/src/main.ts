@@ -17,6 +17,7 @@ async function bootstrap() {
       queueOptions: {
         durable: true,
       },
+      queue: 'road-event-queue',
     },
   });
   await app.startAllMicroservices();

@@ -27,7 +27,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           transport: Transport.RMQ,
           options: {
             urls: [config.get<string>('RABBITMQ_URL')!],
-            queue: 'road-event-queue',
+            queue: 'user-data-queue',
             queueOptions: { durable: true },
           },
         }),
@@ -43,5 +43,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     UserLocationProvidedHandler,
   ],
   exports: [PublishRoadEventHandler],
+  controllers: [UserDataProvidedHandler, UserLocationProvidedHandler]
 })
 export class InfrastructureModule {}
