@@ -5,9 +5,7 @@ import { UserDataProvidedEvent } from '../../domain/events/user-data-provided.ev
 
 @Injectable()
 export class UserDataProvidedHandler {
-  constructor(
-    private agg: AggregateService
-  ) {}
+  constructor(private agg: AggregateService) {}
 
   @EventPattern('user.data.provided')
   async handleUserDataProvided(event: UserDataProvidedEvent) {

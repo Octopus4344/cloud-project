@@ -6,7 +6,6 @@ import { RoadEventRepository } from '../repositories/road-event.repository';
 import { ClientProxy } from '@nestjs/microservices';
 import { RoadEventCompletedEvent } from '../../domain/events/road-event-completed.event';
 
-
 @Injectable()
 export class AggregateService {
   private readonly buffer = new Map<

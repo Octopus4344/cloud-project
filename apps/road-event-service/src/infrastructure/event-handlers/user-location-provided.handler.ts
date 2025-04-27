@@ -6,9 +6,7 @@ import { LocationDataProvidedEvent } from '../../domain/events/location-data-pro
 
 @Injectable()
 export class UserLocationProvidedHandler {
-  constructor(
-    private agg: AggregateService
-  ) {}
+  constructor(private agg: AggregateService) {}
 
   @EventPattern('user.location.provided')
   async handleUserLocationProvided(event: LocationDataProvidedEvent) {
