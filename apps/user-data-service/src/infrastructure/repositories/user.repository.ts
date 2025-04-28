@@ -13,4 +13,9 @@ export class UserRepository {
   findById(id: number) {
     return this.roadEventRepository.findOneBy({ id });
   }
+
+  create(data: Partial<UserEntity>) {
+    const user = this.roadEventRepository.create(data)
+    return this.roadEventRepository.save(user)
+  }
 }

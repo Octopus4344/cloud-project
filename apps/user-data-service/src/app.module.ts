@@ -16,7 +16,8 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
         autoLoadEntities: true,
       }),
     }),
-    InfrastructureModule
+    InfrastructureModule,
+    ApiModule
   ],
 })
 export class AppModule {}
