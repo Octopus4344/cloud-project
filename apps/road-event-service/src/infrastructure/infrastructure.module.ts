@@ -58,6 +58,19 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           },
         }),
       },
+      {
+        name: 'RMQ_AUTH_BUS',
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [config.get<string>('RABBITMQ_URL')!],
+            queue: 'authorities-queue',
+            queueOptions: { durable: true },
+          },
+        }),
+      },
     ]),
   ],
   providers: [

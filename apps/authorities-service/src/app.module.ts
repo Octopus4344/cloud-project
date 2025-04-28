@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ApiModule } from './api/api.module';
 import * as process from 'node:process';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 
@@ -15,6 +16,7 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
         autoLoadEntities: true,
       }),
     }),
+    ApiModule,
     InfrastructureModule
   ],
 })

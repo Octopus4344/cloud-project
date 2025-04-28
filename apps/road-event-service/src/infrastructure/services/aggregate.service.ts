@@ -17,6 +17,7 @@ export class AggregateService {
     private readonly statusRepository: StatusRepository,
     private readonly eventRepository: RoadEventRepository,
     @Inject('RMQ_STAT_BUS') private readonly rmq: ClientProxy,
+    @Inject('RMQ_AUTH_BUS') private readonly rmq_call: ClientProxy,
   ) {}
 
   async onUserData(e: UserDataProvidedEvent) {
@@ -58,6 +59,7 @@ export class AggregateService {
       data!.phoneNumber,
     );
     this.rmq.emit('road.event.completed', completed);
+    this.rmq_call.emit('road.event.completed', completed);
     this.buffer.delete(eventId.toString());
   }
 }
