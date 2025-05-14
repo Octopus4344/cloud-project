@@ -14,8 +14,8 @@ export class UserEntity {
   @Column()
   lastName: string;
 
-  @Column()
-  birthDate: Date;
+  @Column({ type: 'date', nullable: true })
+  birthDate?: Date;
 
   @Column()
   phoneNumber: string;

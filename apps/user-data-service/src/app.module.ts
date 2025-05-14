@@ -17,8 +17,7 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
       }),
     }),
     InfrastructureModule,
-    ApiModule
+    ApiModule,
   ],
 })
 export class AppModule {}
-

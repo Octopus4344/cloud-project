@@ -21,7 +21,7 @@ export class RoadEventCreatedHandler {
       msg.id,
       user.name,
       user.lastName,
-      user.birthDate,
+      user.birthDate!,
       user.phoneNumber,
     );
 

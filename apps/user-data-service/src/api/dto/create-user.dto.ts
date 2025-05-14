@@ -1,6 +1,5 @@
-import { IsEnum, IsNumber, IsNotEmpty, IsOptional, IsDate } from 'class-validator';
-import { RoadEventType } from '../../domain/enums/road-event-type.enum';
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { IsNumber, IsNotEmpty, IsDate } from 'class-validator';
+
 
 export class CreateUserDto {
 

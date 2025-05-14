@@ -1,11 +1,8 @@
-import { ClientProxy, EventPattern } from '@nestjs/microservices';
-import { Controller, Inject, Injectable, Logger } from '@nestjs/common';
+import { EventPattern } from '@nestjs/microservices';
+import { Controller, Logger } from '@nestjs/common';
 import { IncidentRepository } from '../repositories/incident.repository';
 import { RoadEventCompletedEvent } from '../../domain/events/road-event-completed.event';
-import { Column, CreateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
-import { RoadEventType } from '../../domain/enums/road-event-type.enum';
 import { NotifierService } from '../services/notifier.service';
-
 
 @Controller()
 export class RoadEventCompletedHandler {
@@ -21,15 +18,15 @@ export class RoadEventCompletedHandler {
     const referenceNo = await this.notifier.notify(
       evt.eventType,
       evt.latitude,
-      evt.longitude
-    )
+      evt.longitude,
+    );
 
     const saved = await this.incidentRepository.save({
       userId: evt.userId,
       authoritiesType: evt.eventType,
       eventId: evt.eventId,
-      reportNumber: referenceNo
-    })
-    Logger.log('Saved incident', evt.eventId, saved.id)
+      reportNumber: referenceNo,
+    });
+    Logger.log('Saved incident', evt.eventId, saved.id);
   }
 }
