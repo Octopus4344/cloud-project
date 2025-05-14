@@ -221,27 +221,13 @@ resource "aws_ecr_repository" "user_location_service" {
   }
 }
 
-# IAM Role dla ECS Task Execution
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecs-task-execution-role"
+# Używamy istniejącej roli IAM w AWS Academy zamiast tworzyć nową
+# Rola ecsTaskExecutionRole zwykle już istnieje w AWS Academy
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = "sts:AssumeRole",
-        Effect = "Allow",
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
-  role       = aws_iam_role.ecs_task_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+# Definiujemy lokalną zmienną dla ARN roli
+locals {
+  # Użyj wbudowanej roli w AWS Academy
+  ecs_task_execution_role_arn = "arn:aws:iam::810315892481:role/LabRole"
 }
 
 # CloudWatch Log Groups
@@ -501,7 +487,7 @@ resource "aws_ecs_task_definition" "authorities_service" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = local.ecs_task_execution_role_arn
 
   container_definitions = jsonencode([{
     name        = "authorities-service",
@@ -540,7 +526,7 @@ resource "aws_ecs_task_definition" "road_event_service" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = local.ecs_task_execution_role_arn
 
   container_definitions = jsonencode([{
     name        = "road-event-service",
@@ -579,7 +565,7 @@ resource "aws_ecs_task_definition" "statistics_service" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = local.ecs_task_execution_role_arn
 
   container_definitions = jsonencode([{
     name        = "statistics-service",
@@ -618,7 +604,7 @@ resource "aws_ecs_task_definition" "user_data_service" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = local.ecs_task_execution_role_arn
 
   container_definitions = jsonencode([{
     name        = "user-data-service",
@@ -657,7 +643,7 @@ resource "aws_ecs_task_definition" "user_location_service" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = local.ecs_task_execution_role_arn
 
   container_definitions = jsonencode([{
     name        = "user-location-service",
