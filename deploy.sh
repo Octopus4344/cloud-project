@@ -48,6 +48,13 @@ confirm() {
 
 confirm "Czy chcesz kontynuować wdrażanie mikrousług do AWS?"
 
+# Pytanie o tryb wdrożenia
+echo "${YELLOW}Wybierz tryb wdrożenia:${NC}"
+echo "1) Normalne wdrożenie (może zawieść, jeśli zasoby już istnieją)"
+echo "2) Najpierw usuń istniejące zasoby (zalecane, jeśli występują błędy z istniejącymi zasobami)"
+read -p "Twój wybór (1/2): " DEPLOYMENT_MODE
+echo
+
 # Pobieranie danych połączeniowych
 echo "${YELLOW}Proszę podać następujące dane połączeniowe:${NC}"
 read -s -p "URL bazy danych Supabase: " SUPABASE_DB_URL
@@ -62,6 +69,51 @@ cd terraform/stage2
 # Inicjalizacja Terraform
 echo "${YELLOW}Inicjalizacja Terraform...${NC}"
 terraform init
+
+# Jeśli wybrano usuwanie istniejących zasobów
+if [ "$DEPLOYMENT_MODE" = "2" ]; then
+    echo "${YELLOW}Usuwanie istniejących zasobów w AWS...${NC}"
+    
+    # Usuwanie repozytorium ECR - authorities-service
+    echo "${YELLOW}Usuwanie repozytorium ECR: authorities-service...${NC}"
+    aws ecr delete-repository --repository-name authorities-service --force --region $AWS_REGION || true
+    
+    # Usuwanie repozytorium ECR - road-event-service
+    echo "${YELLOW}Usuwanie repozytorium ECR: road-event-service...${NC}"
+    aws ecr delete-repository --repository-name road-event-service --force --region $AWS_REGION || true
+    
+    # Usuwanie repozytorium ECR - statistics-service
+    echo "${YELLOW}Usuwanie repozytorium ECR: statistics-service...${NC}"
+    aws ecr delete-repository --repository-name statistics-service --force --region $AWS_REGION || true
+    
+    # Usuwanie repozytorium ECR - user-data-service
+    echo "${YELLOW}Usuwanie repozytorium ECR: user-data-service...${NC}"
+    aws ecr delete-repository --repository-name user-data-service --force --region $AWS_REGION || true
+    
+    # Usuwanie repozytorium ECR - user-location-service
+    echo "${YELLOW}Usuwanie repozytorium ECR: user-location-service...${NC}"
+    aws ecr delete-repository --repository-name user-location-service --force --region $AWS_REGION || true
+    
+    # Usuwanie grup logów CloudWatch
+    echo "${YELLOW}Usuwanie grup logów CloudWatch...${NC}"
+    aws logs delete-log-group --log-group-name /ecs/authorities-service --region $AWS_REGION || true
+    aws logs delete-log-group --log-group-name /ecs/road-event-service --region $AWS_REGION || true
+    aws logs delete-log-group --log-group-name /ecs/statistics-service --region $AWS_REGION || true
+    aws logs delete-log-group --log-group-name /ecs/user-data-service --region $AWS_REGION || true
+    aws logs delete-log-group --log-group-name /ecs/user-location-service --region $AWS_REGION || true
+    
+    # Oczekiwanie na usunięcie zasobów
+    echo "${YELLOW}Czekam 10 sekund na usunięcie zasobów...${NC}"
+    sleep 10
+    
+    # Usunięcie stanu Terraform, aby wymusić ponowne utworzenie zasobów
+    echo "${YELLOW}Usuwanie stanu Terraform...${NC}"
+    rm -f terraform.tfstate terraform.tfstate.backup || true
+    
+    # Ponowna inicjalizacja Terraform
+    echo "${YELLOW}Inicjalizacja Terraform po usunięciu stanu...${NC}"
+    terraform init
+fi
 
 # Apply konfiguracji
 echo "${YELLOW}Aplikowanie konfiguracji Terraform...${NC}"
