@@ -1,3 +1,8 @@
+// Polyfill crypto
+import crypto from 'node:crypto';
+// @ts-ignore
+globalThis.crypto = crypto;
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
@@ -22,7 +27,7 @@ async function bootstrap() {
   });
   await app.startAllMicroservices();
   await app.listen(3005);
-  Logger.log('Statistics Service is running on port 3005');
+  Logger.log('Satistics Service is running on port 3005');
   // console.log('Road Event Service is running on port 4000');
   // console.log(
   //   `Application road event service is running on: ${await app.getUrl()}`,

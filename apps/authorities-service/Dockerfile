@@ -1,19 +1,33 @@
-FROM node:20-alpine
+# Multi-stage Dockerfile
+FROM node:20-alpine AS builder
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+# Copy package manifests
+COPY package.json package-lock.json ./
 
-RUN npm install
+# Install dependencies
+RUN npm ci
 
+# Copy source code
 COPY . .
 
+# Build the service
 RUN npm run build authorities-service
 
+# Runtime image
+FROM node:20-alpine
+WORKDIR /usr/src/app
+
+# Copy built artifacts and dependencies
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+
+# Expose port
 EXPOSE 3006
 
+# Production environment
 ENV NODE_ENV=production
-ENV DATABASE_URL=postgresql://postgres.sfbspjuexczprymnpoer:postgres@aws-0-eu-central-2.pooler.supabase.com:5432/postgres
-ENV RABBITMQ_URL=amqps://mlkhbtih:f1Mp-g3869SZYiRpiZuF0lecqwjcCJGj@seal.lmq.cloudamqp.com/mlkhbtih
 
+# App start
 CMD ["node", "dist/apps/authorities-service/main"]

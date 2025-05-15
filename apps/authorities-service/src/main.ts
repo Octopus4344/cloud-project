@@ -2,6 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { Logger } from '@nestjs/common';
+import crypto from 'node:crypto';
+// Assign crypto to globalThis for TypeOrm utils
+// @ts-ignore
+globalThis.crypto = crypto;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

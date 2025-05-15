@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 # Script do wdrażania mikrousług do AWS
-# Użycie: ./deploy.sh [aws_region] [environment]
+# Użycie: ./deploy.sh [aws_region] [environment] [supabase_db_url] [rabbitmq_url]
 
 # Kolory do wyświetlania
 GREEN='\033[0;32m'
@@ -13,6 +13,9 @@ NC='\033[0m' # No Color
 # Podstawowe zmienne
 AWS_REGION=${1:-us-east-1}
 ENVIRONMENT=${2:-dev}
+# Użycie opcjonalnych argumentów 3 i 4 dla stałych URL-i
+SUPABASE_DB_URL=${3:-"postgresql://postgres.sfbspjuexczprymnpoer:postgres@aws-0-eu-central-2.pooler.supabase.com:5432/postgres"}
+RABBITMQ_URL=${4:-"amqps://mlkhbtih:f1Mp-g3869SZYiRpiZuF0lecqwjcCJGj@seal.lmq.cloudamqp.com/mlkhbtih"}
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
 echo "${BLUE}=== Deployment Mikrousług do AWS ===${NC}"
@@ -55,15 +58,10 @@ echo "2) Najpierw usuń istniejące zasoby (zalecane, jeśli występują błędy
 read -p "Twój wybór (1/2): " DEPLOYMENT_MODE
 echo
 
-# Pobieranie danych połączeniowych
-echo "${YELLOW}Proszę podać następujące dane połączeniowe:${NC}"
-read -s -p "URL bazy danych Supabase: " SUPABASE_DB_URL
-echo
-read -s -p "URL RabbitMQ (np. amqp://user:pass@host:port): " RABBITMQ_URL
-echo
-
-# Deployment etapu 2 (mikrousługi)
 echo "${GREEN}Wdrażanie mikrousług...${NC}"
+# Przechodzimy do katalogu głównego projektu
+ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
+
 cd terraform/stage2
 
 # Inicjalizacja Terraform
@@ -112,30 +110,20 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 # Budowanie i wypychanie obrazów Docker
 echo "${GREEN}Budowanie i wypychanie obrazów Docker do ECR...${NC}"
 
-echo "${YELLOW}Budowanie i wypychanie authorities-service...${NC}"
-cd ../../apps/authorities-service
-docker build -t $AUTHORITIES_SERVICE_REPO:latest .
-docker push $AUTHORITIES_SERVICE_REPO:latest
+# Funckja do budowania i wypychania każdego serwisu
+build_and_push() {
+  local SERVICE=$1
+  local REPO_URL=$2
+  echo "${YELLOW}Budowanie i wypychanie $SERVICE...${NC}"
+  docker build -t $REPO_URL:latest -f $ROOT_DIR/apps/$SERVICE/Dockerfile $ROOT_DIR
+  docker push $REPO_URL:latest
+}
 
-echo "${YELLOW}Budowanie i wypychanie road-event-service...${NC}"
-cd ../road-event-service
-docker build -t $ROAD_EVENT_SERVICE_REPO:latest .
-docker push $ROAD_EVENT_SERVICE_REPO:latest
-
-echo "${YELLOW}Budowanie i wypychanie statistics-service...${NC}"
-cd ../satistics-service
-docker build -t $STATISTICS_SERVICE_REPO:latest .
-docker push $STATISTICS_SERVICE_REPO:latest
-
-echo "${YELLOW}Budowanie i wypychanie user-data-service...${NC}"
-cd ../user-data-service
-docker build -t $USER_DATA_SERVICE_REPO:latest .
-docker push $USER_DATA_SERVICE_REPO:latest
-
-echo "${YELLOW}Budowanie i wypychanie user-location-service...${NC}"
-cd ../user-location-service
-docker build -t $USER_LOCATION_SERVICE_REPO:latest .
-docker push $USER_LOCATION_SERVICE_REPO:latest
+build_and_push authorities-service $AUTHORITIES_SERVICE_REPO
+build_and_push road-event-service $ROAD_EVENT_SERVICE_REPO
+build_and_push satistics-service $STATISTICS_SERVICE_REPO
+build_and_push user-data-service $USER_DATA_SERVICE_REPO
+build_and_push user-location-service $USER_LOCATION_SERVICE_REPO
 
 # Aktualizacja ECS usług, aby użyć nowych obrazów
 echo "${GREEN}Aktualizacja usług ECS...${NC}"
