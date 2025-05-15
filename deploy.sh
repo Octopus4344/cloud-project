@@ -115,7 +115,7 @@ build_and_push() {
   local SERVICE=$1
   local REPO_URL=$2
   echo "${YELLOW}Budowanie i wypychanie $SERVICE...${NC}"
-  docker build -t $REPO_URL:latest -f $ROOT_DIR/apps/$SERVICE/Dockerfile $ROOT_DIR
+  docker build --pull --no-cache -t $REPO_URL:latest -f $ROOT_DIR/apps/$SERVICE/Dockerfile $ROOT_DIR
   docker push $REPO_URL:latest
 }
 
