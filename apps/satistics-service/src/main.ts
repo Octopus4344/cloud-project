@@ -1,8 +1,3 @@
-// Polyfill crypto
-import crypto from 'node:crypto';
-// @ts-ignore
-globalThis.crypto = crypto;
-
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';

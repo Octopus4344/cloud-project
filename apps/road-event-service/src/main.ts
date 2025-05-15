@@ -3,11 +3,6 @@ import { AppModule } from './app.module';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { Logger } from '@nestjs/common';
 
-// Polyfill crypto
-import crypto from 'node:crypto';
-// @ts-ignore
-globalThis.crypto = crypto;
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
