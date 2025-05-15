@@ -5,6 +5,7 @@ WORKDIR /usr/src/app
 
 # Copy package manifests
 COPY package.json package-lock.json ./
+COPY nest-cli.json tsconfig.json tsconfig.build.json ./
 
 # Install dependencies
 RUN npm ci
