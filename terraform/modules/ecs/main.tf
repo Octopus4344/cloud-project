@@ -106,14 +106,11 @@ resource "aws_cloudwatch_log_group" "service" {
 
 ############### ECS Task Definitions ###############
 
-# Use locals to determine role ARNs based on provided variables or default to the AmazonECSTaskExecutionRolePolicy
+# Use locals to determine role ARNs based on provided variables or default to our created roles
 locals {
-  # Default execution role ARN if none provided (using AWS-managed role)
-  default_execution_role_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-
-  # Use provided role ARNs or defaults
-  execution_role_arn = var.execution_role_arn != "" ? var.execution_role_arn : local.default_execution_role_arn
-  task_role_arn      = var.task_role_arn != "" ? var.task_role_arn : local.default_execution_role_arn
+  # Use provided role ARNs or default to LabRole (commonly available in AWS Academy/Education)
+  execution_role_arn = var.execution_role_arn != "" ? var.execution_role_arn : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
+  task_role_arn      = var.task_role_arn != "" ? var.task_role_arn : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
 }
 
 resource "aws_ecs_task_definition" "service" {
