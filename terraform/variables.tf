@@ -29,6 +29,19 @@ variable "rabbitmq_url" {
   default     = "amqps://mlkhbtih:f1Mp-g3869SZYiRpiZuF0lecqwjcCJGj@seal.lmq.cloudamqp.com/mlkhbtih"
 }
 
+variable "environment" {
+  description = "Environment (dev, staging, prod)"
+  type        = string
+  default     = "dev"
+}
+
+variable "supabase_db_url" {
+  description = "Connection string for Supabase database"
+  type        = string
+  sensitive   = true
+  default     = "postgresql://postgres.sfbspjuexczprymnpoer:postgres@aws-0-eu-central-2.pooler.supabase.com:5432/postgres"
+}
+
 variable "services" {
   description = "Configuration for each microservice"
   type = map(object({
@@ -41,40 +54,32 @@ variable "services" {
   }))
   default = {
     "authorities-service" = {
-      container_port = 3000
-      host_port      = 3000
+      container_port = 3006
+      host_port      = 3006
       cpu            = 256
       memory         = 512
       image          = "authorities-service:latest"
       database_url   = "postgresql://postgres:postgres@localhost:5432/authorities_service_db"
     },
-    "cloud-project" = {
-      container_port = 3001
-      host_port      = 3001
-      cpu            = 256
-      memory         = 512
-      image          = "cloud-project:latest"
-      database_url   = "postgresql://postgres:postgres@localhost:5432/cloud_project_db"
-    },
     "road-event-service" = {
-      container_port = 3002
-      host_port      = 3002
+      container_port = 3000
+      host_port      = 3000
       cpu            = 256
       memory         = 512
       image          = "road-event-service:latest"
       database_url   = "postgresql://postgres:postgres@localhost:5432/road_event_service_db"
     },
     "satistics-service" = {
-      container_port = 3003
-      host_port      = 3003
+      container_port = 3005
+      host_port      = 3005
       cpu            = 256
       memory         = 512
       image          = "satistics-service:latest"
       database_url   = "postgresql://postgres:postgres@localhost:5432/satistics_service_db"
     },
     "user-data-service" = {
-      container_port = 3006
-      host_port      = 3006
+      container_port = 3001
+      host_port      = 3001
       cpu            = 256
       memory         = 512
       image          = "user-data-service:latest"
@@ -88,5 +93,7 @@ variable "services" {
       image          = "user-location-service:latest"
       database_url   = "postgresql://postgres:postgres@localhost:5432/user_location_service_db"
     }
+  }
+}
   }
 }

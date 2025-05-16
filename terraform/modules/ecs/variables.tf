@@ -35,41 +35,43 @@ variable "services" {
     database_url   = optional(string)
   }))
   default = {
-    "meeting-service" = {
+    "authorities-service" = {
+      container_port = 3006
+      host_port      = 3006
+      cpu            = 256
+      memory         = 512
+      image          = "authorities-service:latest"
+    },
+    "road-event-service" = {
       container_port = 3000
       host_port      = 3000
       cpu            = 256
       memory         = 512
-      image          = "meeting-service:latest"
+      image          = "road-event-service:latest"
     },
-    "notification-service" = {
+    "satistics-service" = {
+      container_port = 3005
+      host_port      = 3005
+      cpu            = 256
+      memory         = 512
+      image          = "satistics-service:latest"
+    },
+    "user-data-service" = {
       container_port = 3001
       host_port      = 3001
       cpu            = 256
       memory         = 512
-      image          = "notification-service:latest"
+      image          = "user-data-service:latest"
     },
-    "recording-service" = {
-      container_port = 3002
-      host_port      = 3002
-      cpu            = 256
-      memory         = 512
-      image          = "recording-service:latest"
-    },
-    "summary-service" = {
-      container_port = 3003
-      host_port      = 3003
-      cpu            = 256
-      memory         = 512
-      image          = "summary-service:latest"
-    },
-    "transcription-service" = {
+    "user-location-service" = {
       container_port = 3004
       host_port      = 3004
       cpu            = 256
       memory         = 512
-      image          = "transcription-service:latest"
+      image          = "user-location-service:latest"
     }
+  }
+}
   }
 }
 
