@@ -23,9 +23,5 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(3004);
   Logger.log('User Location Service is running on port 3004');
-  // console.log('Road Event Service is running on port 4000');
-  // console.log(
-  //   `Application road event service is running on: ${await app.getUrl()}`,
-  // );
 }
 bootstrap();

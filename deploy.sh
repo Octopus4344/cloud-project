@@ -159,7 +159,7 @@ ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
 echo "${YELLOW}Uruchamiam agresywne czyszczenie przed rozpoczęciem wdrażania...${NC}"
 docker_cleanup
 
-cd terraform/stage2
+cd terraform
 
 # Inicjalizacja Terraform
 echo "${YELLOW}Inicjalizacja Terraform...${NC}"
@@ -170,9 +170,9 @@ if [ "$DEPLOYMENT_MODE" = "2" ]; then
     echo "${YELLOW}Usuwanie istniejących zasobów w AWS...${NC}"
     
     # Uruchom skrypt czyszczący z odpowiednimi parametrami
-    cd ../../
+    cd ../
     ./cleanup.sh $AWS_REGION
-    cd terraform/stage2
+    cd terraform
     
     # Ponowna inicjalizacja Terraform po czyszczeniu
     echo "${YELLOW}Inicjalizacja Terraform po czyszczeniu...${NC}"
@@ -248,7 +248,7 @@ build_and_push user-location-service $USER_LOCATION_SERVICE_REPO
 
 # Aktualizacja ECS usług, aby użyć nowych obrazów
 echo "${GREEN}Aktualizacja usług ECS...${NC}"
-cd ../../terraform/stage2
+cd ../terraform
 terraform apply \
   -var="aws_region=$AWS_REGION" \
   -var="environment=$ENVIRONMENT" \
