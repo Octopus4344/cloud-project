@@ -37,7 +37,7 @@ resource "aws_ecr_repository" "service" {
 resource "aws_lb" "service" {
   for_each = var.services
 
-  name               = "${substr(var.project_name, 0, 16)}-${substr(each.key, 0, 16)}-alb"
+  name               = "${substr(var.project_name, 0, 8)}-${substr(each.key, 0, 10)}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.lb_security_group_id]
@@ -53,7 +53,7 @@ resource "aws_lb" "service" {
 resource "aws_lb_target_group" "service" {
   for_each = var.services
 
-  name        = "${substr(var.project_name, 0, 16)}-${substr(each.key, 0, 16)}-tg"
+  name        = "${substr(var.project_name, 0, 8)}-${substr(each.key, 0, 10)}-tg"
   port        = each.value.container_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
