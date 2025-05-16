@@ -1,7 +1,13 @@
 #!/bin/zsh
 
 # Script do wdrażania mikrousług do AWS
-# Użycie: ./deploy.sh [aws_region] [environment] [supabase_db_url] [rabbitmq_url]
+# Użycie: ./deploy.sh [aws_region] [environment] [supabase_db_url] [rabbitmq_url] [use_cache]
+# Parametry:
+#   aws_region    - Region AWS (domyślnie: us-east-1)
+#   environment   - Środowisko (domyślnie: dev)
+#   supabase_db_url - URL bazy danych Supabase (opcjonalny)
+#   rabbitmq_url  - URL RabbitMQ (opcjonalny)
+#   use_cache     - Czy używać cache przy budowaniu obrazów (true/false, domyślnie: false)
 
 # Kolory do wyświetlania
 GREEN='\033[0;32m'
@@ -17,6 +23,8 @@ ENVIRONMENT=${2:-dev}
 SUPABASE_DB_URL=${3:-"postgresql://postgres.sfbspjuexczprymnpoer:postgres@aws-0-eu-central-2.pooler.supabase.com:5432/postgres"}
 RABBITMQ_URL=${4:-"amqps://mlkhbtih:f1Mp-g3869SZYiRpiZuF0lecqwjcCJGj@seal.lmq.cloudamqp.com/mlkhbtih"}
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+# Flaga do kontrolowania czy korzystać z cache podczas budowy obrazów
+USE_CACHE=${5:-"false"}
 
 echo "${BLUE}=== Deployment Mikrousług do AWS ===${NC}"
 echo "${YELLOW}Region AWS:${NC} $AWS_REGION"
@@ -110,13 +118,24 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 # Budowanie i wypychanie obrazów Docker
 echo "${GREEN}Budowanie i wypychanie obrazów Docker do ECR...${NC}"
 
-# Funckja do budowania i wypychania każdego serwisu
+# Czyszczenie nieużywanych obrazów Docker przed rozpoczęciem budowy
+echo "${YELLOW}Czyszczenie nieużywanych zasobów Docker...${NC}"
+docker system prune -f
+
+# Funkcja do budowania i wypychania każdego serwisu z optymalizacją miejsca
 build_and_push() {
   local SERVICE=$1
   local REPO_URL=$2
   echo "${YELLOW}Budowanie i wypychanie $SERVICE...${NC}"
-  docker build -t $REPO_URL:latest -f $ROOT_DIR/apps/$SERVICE/Dockerfile $ROOT_DIR
+  # Opcja --no-cache zależna od parametru USE_CACHE
+  if [ "$USE_CACHE" = "true" ]; then
+    docker build --pull -t $REPO_URL:latest -f $ROOT_DIR/apps/$SERVICE/Dockerfile $ROOT_DIR
+  else
+    docker build --no-cache --pull -t $REPO_URL:latest -f $ROOT_DIR/apps/$SERVICE/Dockerfile $ROOT_DIR
+  fi
   docker push $REPO_URL:latest
+  # Usuwanie lokalnego obrazu po wypchnięciu do ECR
+  docker rmi $REPO_URL:latest
 }
 
 build_and_push authorities-service $AUTHORITIES_SERVICE_REPO
@@ -137,6 +156,10 @@ terraform apply \
 
 # Pobranie adresu URL load balancera
 ALB_DNS=$(terraform output -raw alb_dns_name)
+
+# Czyszczenie zasobów Docker po deploymencie
+echo "${YELLOW}Czyszczenie pozostałych zasobów Docker...${NC}"
+docker system prune -af
 
 echo "${GREEN}Deployment zakończony pomyślnie!${NC}"
 echo "${YELLOW}Twoje mikrousługi są dostępne pod adresem:${NC} http://$ALB_DNS"
