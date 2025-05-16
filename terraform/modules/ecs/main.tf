@@ -108,9 +108,9 @@ resource "aws_cloudwatch_log_group" "service" {
 
 # Use locals to determine role ARNs based on provided variables or default to our created roles
 locals {
-  # Use provided role ARNs or default to LabRole (commonly available in AWS Academy/Education)
-  execution_role_arn = var.execution_role_arn != "" ? var.execution_role_arn : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
-  task_role_arn      = var.task_role_arn != "" ? var.task_role_arn : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
+  # Use provided role ARNs or use the specific AWS Academy role that worked previously
+  execution_role_arn = var.execution_role_arn != "" ? var.execution_role_arn : "arn:aws:iam::810315892481:role/LabRole"
+  task_role_arn      = var.task_role_arn != "" ? var.task_role_arn : "arn:aws:iam::810315892481:role/LabRole"
 }
 
 resource "aws_ecs_task_definition" "service" {
