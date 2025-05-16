@@ -95,5 +95,3 @@ variable "services" {
     }
   }
 }
-  }
-}
