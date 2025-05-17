@@ -297,7 +297,7 @@ resource "aws_lb_target_group" "authorities_service" {
   health_check {
     enabled             = true
     interval            = 30
-    path                = "/health"
+    path                = "/authorities/health"
     timeout             = 5
     healthy_threshold   = 3
     unhealthy_threshold = 3
@@ -319,7 +319,7 @@ resource "aws_lb_target_group" "road_event_service" {
   health_check {
     enabled             = true
     interval            = 30
-    path                = "/health"
+    path                = "/road-events/health"
     timeout             = 5
     healthy_threshold   = 3
     unhealthy_threshold = 3
@@ -341,7 +341,7 @@ resource "aws_lb_target_group" "statistics_service" {
   health_check {
     enabled             = true
     interval            = 30
-    path                = "/health"
+    path                = "/statistics/health"
     timeout             = 5
     healthy_threshold   = 3
     unhealthy_threshold = 3
@@ -363,7 +363,7 @@ resource "aws_lb_target_group" "user_data_service" {
   health_check {
     enabled             = true
     interval            = 30
-    path                = "/health"
+    path                = "/user-data/health"
     timeout             = 5
     healthy_threshold   = 3
     unhealthy_threshold = 3
@@ -385,7 +385,7 @@ resource "aws_lb_target_group" "user_location_service" {
   health_check {
     enabled             = true
     interval            = 30
-    path                = "/health"
+    path                = "/user-location/health"
     timeout             = 5
     healthy_threshold   = 3
     unhealthy_threshold = 3

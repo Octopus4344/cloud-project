@@ -4,7 +4,7 @@ import { PublishRoadEventCommand } from '../../domain/commands/publish-road-even
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UserRepository } from '../../infrastructure/repositories/user.repository';
 
-@Controller('users')
+@Controller('user-data')
 export class UserController {
   constructor(private readonly userRepo: UserRepository) {}
 
