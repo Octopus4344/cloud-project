@@ -1,23 +1,23 @@
 variable "aws_region" {
-  description = "Region AWS, w którym zostanie wdrożona infrastruktura"
+  description = ""
   type        = string
   default     = "us-east-1"
 }
 
 variable "environment" {
-  description = "Środowisko (np. dev, prod)"
+  description = ""
   type        = string
   default     = "dev"
 }
 
 variable "supabase_db_url" {
-  description = "URL połączenia do bazy danych Supabase"
+  description = ""
   type        = string
   sensitive   = true
 }
 
 variable "rabbitmq_url" {
-  description = "URL połączenia do serwera RabbitMQ"
+  description = ""
   type        = string
   sensitive   = true
 }

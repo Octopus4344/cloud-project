@@ -2,7 +2,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-# VPC dla mikrousług
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
@@ -14,7 +13,6 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Publiczne podsieci
 resource "aws_subnet" "public" {
   count                   = 2
   vpc_id                  = aws_vpc.main.id
@@ -28,7 +26,6 @@ resource "aws_subnet" "public" {
   }
 }
 
-# Prywatne podsieci
 resource "aws_subnet" "private" {
   count             = 2
   vpc_id            = aws_vpc.main.id
@@ -41,7 +38,6 @@ resource "aws_subnet" "private" {
   }
 }
 
-# Internet Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
   
@@ -51,7 +47,6 @@ resource "aws_internet_gateway" "main" {
   }
 }
 
-# Elastic IP dla NAT Gateway
 resource "aws_eip" "nat" {
   domain = "vpc"
   
@@ -61,7 +56,6 @@ resource "aws_eip" "nat" {
   }
 }
 
-# NAT Gateway
 resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public[0].id
@@ -72,7 +66,6 @@ resource "aws_nat_gateway" "main" {
   }
 }
 
-# Tabela routingu dla publicznych podsieci
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
   
@@ -87,7 +80,6 @@ resource "aws_route_table" "public" {
   }
 }
 
-# Tabela routingu dla prywatnych podsieci
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
   
@@ -102,25 +94,30 @@ resource "aws_route_table" "private" {
   }
 }
 
-# Powiązanie tabeli routingu z publicznymi podsieciami
 resource "aws_route_table_association" "public" {
   count          = 2
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
 
-# Powiązanie tabeli routingu z prywatnymi podsieciami
 resource "aws_route_table_association" "private" {
   count          = 2
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
 }
 
-# Security Group dla ECS Tasks
 resource "aws_security_group" "ecs_tasks" {
   name        = "microservices-ecs-tasks-sg"
   description = "Allow inbound access from ALB only"
   vpc_id      = aws_vpc.main.id
+
+  ingress {
+    protocol        = "tcp"
+    from_port       = 3000
+    to_port         = 3010
+    security_groups = [aws_security_group.alb.id]
+    description     = "Allow traffic from ALB to container ports"
+  }
 
   egress {
     protocol    = "-1"
@@ -135,7 +132,6 @@ resource "aws_security_group" "ecs_tasks" {
   }
 }
 
-# Security Group dla ALB
 resource "aws_security_group" "alb" {
   name        = "microservices-alb-sg"
   description = "Allow HTTP inbound traffic"
@@ -161,7 +157,6 @@ resource "aws_security_group" "alb" {
   }
 }
 
-# Klaster ECS
 resource "aws_ecs_cluster" "main" {
   name = "microservices-cluster"
   
@@ -175,7 +170,6 @@ resource "aws_ecs_cluster" "main" {
   }
 }
 
-# ECR Repozytoria
 resource "aws_ecr_repository" "authorities_service" {
   name                 = "authorities-service"
   image_tag_mutability = "MUTABLE"
@@ -246,16 +240,10 @@ resource "aws_ecr_repository" "user_location_service" {
   }
 }
 
-# Używamy istniejącej roli IAM w AWS Academy zamiast tworzyć nową
-# Rola ecsTaskExecutionRole zwykle już istnieje w AWS Academy
-
-# Definiujemy lokalną zmienną dla ARN roli
 locals {
-  # Użyj wbudowanej roli w AWS Academy
   ecs_task_execution_role_arn = "arn:aws:iam::810315892481:role/LabRole"
 }
 
-# CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "authorities_service" {
   name              = "/ecs/authorities-service"
   retention_in_days = 30
@@ -281,7 +269,6 @@ resource "aws_cloudwatch_log_group" "user_location_service" {
   retention_in_days = 30
 }
 
-# Application Load Balancer
 resource "aws_lb" "main" {
   name               = "microservices-alb"
   internal           = false
@@ -300,7 +287,6 @@ resource "aws_lb" "main" {
   }
 }
 
-# Target Groups
 resource "aws_lb_target_group" "authorities_service" {
   name        = "authorities-service-tg"
   port        = 3006
@@ -411,7 +397,6 @@ resource "aws_lb_target_group" "user_location_service" {
   }
 }
 
-# Listener
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
@@ -428,7 +413,6 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-# Listener Rules
 resource "aws_lb_listener_rule" "authorities_service" {
   listener_arn = aws_lb_listener.http.arn
   priority     = 100
@@ -509,7 +493,6 @@ resource "aws_lb_listener_rule" "user_location_service" {
   }
 }
 
-# ECS Task Definitions
 resource "aws_ecs_task_definition" "authorities_service" {
   family                   = "authorities-service"
   requires_compatibilities = ["FARGATE"]
@@ -705,7 +688,6 @@ resource "aws_ecs_task_definition" "user_location_service" {
   }
 }
 
-# ECS Services
 resource "aws_ecs_service" "authorities_service" {
   name            = "authorities-service"
   cluster         = aws_ecs_cluster.main.id
@@ -836,7 +818,6 @@ resource "aws_ecs_service" "user_location_service" {
   }
 }
 
-# Output
 output "alb_dns_name" {
   value       = aws_lb.main.dns_name
   description = "The DNS name of the load balancer"
