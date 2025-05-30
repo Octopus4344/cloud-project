@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as process from 'node:process';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
+import { ApiModule } from './api/api.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
         autoLoadEntities: true,
       }),
     }),
-    InfrastructureModule
+    InfrastructureModule,
+    ApiModule,
   ],
 })
 export class AppModule {}

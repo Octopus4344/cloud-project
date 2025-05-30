@@ -3,7 +3,7 @@ import { QueryBus } from '@nestjs/cqrs';
 import { StatisticsResponseDto } from '../dto/statistics-response.dto';
 import { GetStatisticsQuery } from '../../domain/queries/get-statistics.query';
 
-@Controller('statistics')
+@Controller('stats')
 export class StatisticsController {
   constructor(private readonly queryBus: QueryBus) {}
 

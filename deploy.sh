@@ -1,6 +1,5 @@
 #!/bin/zsh
 
-# Script do wdrażania mikrousług do AWS
 # Użycie: ./deploy.sh [aws_region] [environment] [supabase_db_url] [rabbitmq_url]
 # Parametry:
 #   aws_region    - Region AWS (domyślnie: us-east-1)
@@ -13,7 +12,7 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 # Podstawowe zmienne
 AWS_REGION=${1:-us-east-1}
@@ -22,7 +21,6 @@ ENVIRONMENT=${2:-dev}
 SUPABASE_DB_URL=${3:-"postgresql://postgres.sfbspjuexczprymnpoer:postgres@aws-0-eu-central-2.pooler.supabase.com:5432/postgres"}
 RABBITMQ_URL=${4:-"amqps://mlkhbtih:f1Mp-g3869SZYiRpiZuF0lecqwjcCJGj@seal.lmq.cloudamqp.com/mlkhbtih"}
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-# Flaga usunięta, będziemy zawsze budować bez cache
 
 echo "${BLUE}=== Deployment Mikrousług do AWS ===${NC}"
 echo "${YELLOW}Region AWS:${NC} $AWS_REGION"
@@ -144,7 +142,7 @@ confirm() {
 
 confirm "Czy chcesz kontynuować wdrażanie mikrousług do AWS?"
 
-# Pytanie o tryb wdrożenia
+
 echo "${YELLOW}Wybierz tryb wdrożenia:${NC}"
 echo "1) Normalne wdrożenie (może zawieść, jeśli zasoby już istnieją)"
 echo "2) Najpierw usuń istniejące zasoby (zalecane, jeśli występują błędy z istniejącymi zasobami)"
@@ -271,3 +269,4 @@ echo "- Road Event Service: http://$ALB_DNS/road-events"
 echo "- Statistics Service: http://$ALB_DNS/statistics"
 echo "- User Data Service: http://$ALB_DNS/user-data"
 echo "- User Location Service: http://$ALB_DNS/user-location"
+

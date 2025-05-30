@@ -3,7 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { PublishRoadEventCommand } from '../../domain/commands/publish-road-event.command';
 import { CreateRoadEventDto } from '../dto/create-road-event.dto';
 
-@Controller('road-events')
+@Controller('events')
 export class RoadEventController {
   constructor(private readonly commandBus: CommandBus) {}
 

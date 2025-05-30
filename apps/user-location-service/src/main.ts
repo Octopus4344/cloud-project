@@ -5,7 +5,6 @@ import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('user-location'); // Dodanie globalnego prefiksu
 
   const rabbitMQUrl = process.env.RABBITMQ_URL;
   if (!rabbitMQUrl) {
