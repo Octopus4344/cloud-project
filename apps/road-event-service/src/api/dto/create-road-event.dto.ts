@@ -3,10 +3,6 @@ import { RoadEventType } from '../../domain/enums/road-event-type.enum';
 
 export class CreateRoadEventDto {
   @IsNotEmpty()
-  @IsNumber()
-  userId: number;
-
-  @IsNotEmpty()
   @IsEnum(RoadEventType)
   eventType: RoadEventType;
 
@@ -17,5 +13,4 @@ export class CreateRoadEventDto {
   @IsOptional()
   @IsNumber()
   longitude?: number;
-
 }

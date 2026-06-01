@@ -1,29 +1,47 @@
-import { ClientProxy, EventPattern } from '@nestjs/microservices';
-import { Controller, Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { LocationRepository } from '../repositories/location.repository';
 import { RoadEventCreatedEvent } from '../../domain/events/road-event-created.event';
 import { LocationDataProvidedEvent } from '../../domain/events/location-data-provided.event';
+import { SqsProducerService } from '../messaging/sqs-producer.service';
 
+// Bounding box for Poland – used as a fallback mock when the client
+// did not provide GPS coordinates (e.g. during local testing).
+const POLAND_LAT = { min: 49.0, max: 54.8 };
+const POLAND_LON = { min: 14.1, max: 24.1 };
 
-@Controller()
+function randomInRange(min: number, max: number): number {
+  return Math.round((min + Math.random() * (max - min)) * 1e6) / 1e6;
+}
+
+@Injectable()
 export class RoadEventCreatedHandler {
+  private readonly logger = new Logger(RoadEventCreatedHandler.name);
+
   constructor(
     private readonly locRepository: LocationRepository,
-    @Inject('RMQ_LOCATION_BUS') private readonly rmq: ClientProxy,
+    private readonly sqsProducer: SqsProducerService,
+    private readonly config: ConfigService,
   ) {}
 
-  @EventPattern('road.event.created')
-  async handle(evt: RoadEventCreatedEvent) {
-    Logger.log('Received event:', evt);
-    const lat = (Math.random() - 0.5) * 0.01
-    const long = (Math.random() - 0.5) * 0.01
+  async handle(evt: RoadEventCreatedEvent): Promise<void> {
+    this.logger.log('Received road.event.created', JSON.stringify(evt));
+
+    // Use coordinates sent by the client device (GPS).
+    // Fall back to random Polish coordinates for local/test environments.
+    const latitude =
+      evt.latitude ?? randomInRange(POLAND_LAT.min, POLAND_LAT.max);
+    const longitude =
+      evt.longitude ?? randomInRange(POLAND_LON.min, POLAND_LON.max);
 
     const saved = await this.locRepository.save({
+      eventId: evt.id,
       userId: evt.userId,
-      latitude: lat,
-      longitude: long,
-    })
-    Logger.log('Saved location:', JSON.stringify(saved));
+      latitude,
+      longitude,
+    });
+
+    this.logger.log('Saved location for event', saved.eventId);
 
     const event = new LocationDataProvidedEvent(
       evt.id,
@@ -31,15 +49,13 @@ export class RoadEventCreatedHandler {
       saved.longitude,
     );
 
-    Logger.log('Publishing event:', event);
-    const result = this.rmq.emit('user.location.provided', event);
-    result.subscribe({
-      next: (response) => Logger.log('Event published successfully:', response),
-      error: (error) =>
-        Logger.error(
-          'Error publishing event:',
-          error.stack ?? JSON.stringify(error),
-        ),
-    });
+    this.logger.log(
+      'Publishing user.location.provided back to road-event-queue',
+    );
+    await this.sqsProducer.send(
+      this.config.get<string>('SQS_ROAD_EVENT_QUEUE_URL')!,
+      'user.location.provided',
+      event,
+    );
   }
 }

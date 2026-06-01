@@ -20,6 +20,9 @@ RUN npm install --no-save && npm run build user-location-service && npm prune --
 FROM node:22-alpine
 WORKDIR /usr/src/app
 
+# Install curl for healthchecks
+RUN apk add --no-cache curl
+
 # Copy only the built artifacts and production node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules

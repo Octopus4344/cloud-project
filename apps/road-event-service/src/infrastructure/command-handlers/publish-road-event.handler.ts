@@ -1,56 +1,61 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
 import { PublishRoadEventCommand } from '../../domain/commands/publish-road-event.command';
 import { RoadEventRepository } from '../repositories/road-event.repository';
-import { Inject, Logger } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-import { RoadEventCreatedEvent } from '../../domain/events/road-event-created.event';
 import { StatusRepository } from '../repositories/status.repository';
+import { RoadEventCreatedEvent } from '../../domain/events/road-event-created.event';
+import { SqsProducerService } from '../messaging/sqs-producer.service';
 
 @CommandHandler(PublishRoadEventCommand)
 export class PublishRoadEventHandler
   implements ICommandHandler<PublishRoadEventCommand>
 {
+  private readonly logger = new Logger(PublishRoadEventHandler.name);
+
   constructor(
     private readonly roadEventRepository: RoadEventRepository,
     private readonly statusRepository: StatusRepository,
-    @Inject('RMQ_EVENTS_BUS') private readonly rmq: ClientProxy,
-    @Inject('RMQ_LOC_BUS') private readonly rmqLoc: ClientProxy,
+    private readonly sqsProducer: SqsProducerService,
+    private readonly config: ConfigService,
   ) {}
 
-  async execute(command: PublishRoadEventCommand) {
+  async execute(command: PublishRoadEventCommand): Promise<string> {
     const entity = await this.roadEventRepository.save({
       userId: command.userId,
-      latitude: command.latitude,
-      longitude: command.longitude,
+      latitude: command.latitude ?? null,
+      longitude: command.longitude ?? null,
       eventType: command.eventType,
     });
-    await this.statusRepository.create(entity.id);
+
+    await this.statusRepository.create(entity.eventId);
+
     const created = new RoadEventCreatedEvent(
-      entity.id,
+      entity.eventId,
       entity.userId,
       entity.eventType,
-      entity.latitude,
-      entity.longitude,
+      entity.latitude ?? undefined,
+      entity.longitude ?? undefined,
     );
-    Logger.log('Publishing event:', created);
-    const result = this.rmq.emit('road.event.created', created);
-    result.subscribe({
-      next: (response) => Logger.log('Event published successfully to user queue:', response),
-      error: (error) =>
-        Logger.error(
-          'Error publishing event:',
-          error.stack ?? JSON.stringify(error),
-        ),
-    });
-    const resultLoc = this.rmqLoc.emit('road.event.created', created);
-    resultLoc.subscribe({
-      next: (response) => Logger.log('Event published successfully to location queue:', response),
-      error: (error) =>
-        Logger.error(
-          'Error publishing event:',
-          error.stack ?? JSON.stringify(error),
-        ),
-    });
-    return entity.id;
+
+    this.logger.log(
+      'Publishing road.event.created to user-data and user-location queues',
+    );
+
+    await Promise.all([
+      this.sqsProducer.send(
+        this.config.get<string>('SQS_USER_DATA_QUEUE_URL')!,
+        'road.event.created',
+        created,
+      ),
+      this.sqsProducer.send(
+        this.config.get<string>('SQS_USER_LOCATION_QUEUE_URL')!,
+        'road.event.created',
+        created,
+      ),
+    ]);
+
+    return entity.eventId;
   }
 }

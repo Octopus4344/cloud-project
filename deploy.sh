@@ -1,11 +1,9 @@
 #!/bin/zsh
 
-# Użycie: ./deploy.sh [aws_region] [environment] [supabase_db_url] [rabbitmq_url]
+# Użycie: ./deploy.sh [aws_region] [environment]
 # Parametry:
 #   aws_region    - Region AWS (domyślnie: us-east-1)
 #   environment   - Środowisko (domyślnie: dev)
-#   supabase_db_url - URL bazy danych Supabase (opcjonalny)
-#   rabbitmq_url  - URL RabbitMQ (opcjonalny)
 
 # Kolory do wyświetlania
 GREEN='\033[0;32m'
@@ -15,11 +13,8 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 # Podstawowe zmienne
-AWS_REGION=${1:-us-east-1}
+AWS_REGION=${1:-eu-north-1}
 ENVIRONMENT=${2:-dev}
-# Użycie opcjonalnych argumentów 3 i 4 dla stałych URL-i
-SUPABASE_DB_URL=${3:-"postgresql://postgres.sfbspjuexczprymnpoer:postgres@aws-0-eu-central-2.pooler.supabase.com:5432/postgres"}
-RABBITMQ_URL=${4:-"amqps://mlkhbtih:f1Mp-g3869SZYiRpiZuF0lecqwjcCJGj@seal.lmq.cloudamqp.com/mlkhbtih"}
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
 echo "${BLUE}=== Deployment Mikrousług do AWS ===${NC}"
@@ -132,7 +127,8 @@ docker_cleanup() {
 
 # Funkcja do potwierdzenia
 confirm() {
-    read -p "$1 (t/n) " -n 1 -r
+    print -n "$1 (t/n) "
+    read -r REPLY
     echo
     if [[ ! $REPLY =~ ^[Tt]$ ]]; then
         echo "${RED}Deployment przerwany.${NC}"
@@ -146,7 +142,8 @@ confirm "Czy chcesz kontynuować wdrażanie mikrousług do AWS?"
 echo "${YELLOW}Wybierz tryb wdrożenia:${NC}"
 echo "1) Normalne wdrożenie (może zawieść, jeśli zasoby już istnieją)"
 echo "2) Najpierw usuń istniejące zasoby (zalecane, jeśli występują błędy z istniejącymi zasobami)"
-read -p "Twój wybór (1/2): " DEPLOYMENT_MODE
+print -n "Twój wybór (1/2): "
+read -r DEPLOYMENT_MODE
 echo
 
 echo "${GREEN}Wdrażanie mikrousług...${NC}"
@@ -182,8 +179,6 @@ echo "${YELLOW}Aplikowanie konfiguracji Terraform...${NC}"
 terraform apply \
   -var="aws_region=$AWS_REGION" \
   -var="environment=$ENVIRONMENT" \
-  -var="supabase_db_url=$SUPABASE_DB_URL" \
-  -var="rabbitmq_url=$RABBITMQ_URL" \
   -auto-approve
 
 if [ $? -ne 0 ]; then
@@ -218,21 +213,22 @@ build_and_push() {
   # Uruchom czyszczenie przed każdym buildem
   docker_cleanup true
   
-  # Budowanie z minimalnymi warstwami i bez cache
+  # Budowanie z minimalnymi warstwami i bez cache (linux/amd64 dla EC2 x86_64)
   DOCKER_BUILDKIT=1 docker build \
     --no-cache \
     --pull \
     --force-rm \
+    --platform linux/amd64 \
     --build-arg BUILDKIT_INLINE_CACHE=0 \
-    -t $REPO_URL:latest \
+    -t "${REPO_URL}:latest" \
     -f $ROOT_DIR/apps/$SERVICE/Dockerfile \
     $ROOT_DIR
     
   # Wypchnij obraz do ECR
-  docker push $REPO_URL:latest
+  docker push "${REPO_URL}:latest"
   
   # Natychmiast usuń obraz lokalny
-  docker rmi $REPO_URL:latest
+  docker rmi "${REPO_URL}:latest"
   
   # Czyszczenie po każdym buildzie
   docker_cleanup true
@@ -250,8 +246,6 @@ cd ../../terraform/stage2
 terraform apply \
   -var="aws_region=$AWS_REGION" \
   -var="environment=$ENVIRONMENT" \
-  -var="supabase_db_url=$SUPABASE_DB_URL" \
-  -var="rabbitmq_url=$RABBITMQ_URL" \
   -auto-approve
 
 # Pobranie adresu URL load balancera

@@ -1,10 +1,16 @@
-import { IsEnum, IsNumber, IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { RoadEventType } from '../../domain/enums/road-event-type.enum';
 
 export class CreateRoadEventDto {
   @IsNotEmpty()
-  @IsNumber()
-  userId: number;
+  @IsString()
+  userId: string;
 
   @IsNotEmpty()
   @IsEnum(RoadEventType)
@@ -17,5 +23,4 @@ export class CreateRoadEventDto {
   @IsOptional()
   @IsNumber()
   longitude?: number;
-
 }

@@ -1,77 +1,25 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
 
-import { RoadEventEntity } from '../domain/entities/road-event.entity';
 import { RoadEventRepository } from './repositories/road-event.repository';
-import { PublishRoadEventHandler } from './command-handlers/publish-road-event.handler';
-import { EventStatusEntity } from '../domain/entities/event-status.entity';
 import { StatusRepository } from './repositories/status.repository';
+import { PublishRoadEventHandler } from './command-handlers/publish-road-event.handler';
 import { AggregateService } from './services/aggregate.service';
 import { UserDataProvidedHandler } from './event-handlers/user-data-provided.handler';
 import { UserLocationProvidedHandler } from './event-handlers/user-location-provided.handler';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SqsProducerService } from './messaging/sqs-producer.service';
+import { SqsConsumerService } from './messaging/sqs-consumer.service';
+import { SnsProducerService } from './messaging/sns-producer.service';
+import { CognitoJwtStrategy } from './auth/cognito-jwt.strategy';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     CqrsModule,
-    TypeOrmModule.forFeature([RoadEventEntity, EventStatusEntity]),
-    ClientsModule.registerAsync([
-      {
-        name: 'RMQ_EVENTS_BUS',
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [config.get<string>('RABBITMQ_URL')!],
-            queue: 'user-data-queue',
-            queueOptions: { durable: true },
-          },
-        }),
-      },
-      {
-        name: 'RMQ_LOC_BUS',
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [config.get<string>('RABBITMQ_URL')!],
-            queue: 'user-loc-queue',
-            queueOptions: { durable: true },
-          },
-        }),
-      },
-      {
-        name: 'RMQ_STAT_BUS',
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [config.get<string>('RABBITMQ_URL')!],
-            queue: 'stat-queue',
-            queueOptions: { durable: true },
-          },
-        }),
-      },
-      {
-        name: 'RMQ_AUTH_BUS',
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [config.get<string>('RABBITMQ_URL')!],
-            queue: 'authorities-queue',
-            queueOptions: { durable: true },
-          },
-        }),
-      },
-    ]),
+    PassportModule.register({ defaultStrategy: 'cognito-jwt' }),
   ],
   providers: [
     RoadEventRepository,
@@ -80,8 +28,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     PublishRoadEventHandler,
     UserDataProvidedHandler,
     UserLocationProvidedHandler,
+    SqsProducerService,
+    SqsConsumerService,
+    SnsProducerService,
+    CognitoJwtStrategy,
+    JwtAuthGuard,
   ],
-  exports: [PublishRoadEventHandler],
-  controllers: [UserDataProvidedHandler, UserLocationProvidedHandler]
+  exports: [PublishRoadEventHandler, JwtAuthGuard],
 })
 export class InfrastructureModule {}

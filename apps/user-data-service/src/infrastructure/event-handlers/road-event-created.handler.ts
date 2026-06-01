@@ -1,39 +1,46 @@
-import { ClientProxy, EventPattern } from '@nestjs/microservices';
-import { Controller, Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { UserDataProvidedEvent } from '../../domain/events/user-data-provided.event';
 import { UserRepository } from '../repositories/user.repository';
+import { SqsProducerService } from '../messaging/sqs-producer.service';
 
-@Controller()
+@Injectable()
 export class RoadEventCreatedHandler {
+  private readonly logger = new Logger(RoadEventCreatedHandler.name);
+
   constructor(
     private readonly userRepository: UserRepository,
-    @Inject('RMQ_USERS_BUS') private readonly rmq: ClientProxy,
+    private readonly sqsProducer: SqsProducerService,
+    private readonly config: ConfigService,
   ) {}
 
-  @EventPattern('road.event.created')
-  async handle(msg: {id: number, userId: number, eventType: string, latitude: number | null, longitude: number | null}) {
-    Logger.log('Received event:', msg);
-    const user = await this.userRepository.findById(msg.userId);
+  async handle(msg: {
+    id: string;
+    userId: string;
+    eventType: string;
+    latitude?: number;
+    longitude?: number;
+  }): Promise<void> {
+    this.logger.log('Received road.event.created', JSON.stringify(msg));
+
+    const user = await this.userRepository.findById(String(msg.userId));
     if (!user) {
       throw new Error(`User with id ${msg.userId} not found`);
     }
+
     const event = new UserDataProvidedEvent(
       msg.id,
       user.name,
       user.lastName,
-      user.birthDate!,
+      user.birthDate as any,
       user.phoneNumber,
     );
 
-    Logger.log('Publishing event:', event);
-    const result = this.rmq.emit('user.data.provided', event);
-    result.subscribe({
-      next: (response) => Logger.log('Event published successfully:', response),
-      error: (error) =>
-        Logger.error(
-          'Error publishing event:',
-          error.stack ?? JSON.stringify(error),
-        ),
-    });
+    this.logger.log('Publishing user.data.provided back to road-event-queue');
+    await this.sqsProducer.send(
+      this.config.get<string>('SQS_ROAD_EVENT_QUEUE_URL')!,
+      'user.data.provided',
+      event,
+    );
   }
 }

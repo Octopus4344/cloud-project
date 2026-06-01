@@ -1,19 +1,19 @@
-import { EventPattern } from '@nestjs/microservices';
-import { Controller, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IncidentRepository } from '../repositories/incident.repository';
 import { RoadEventCompletedEvent } from '../../domain/events/road-event-completed.event';
 import { NotifierService } from '../services/notifier.service';
 
-@Controller()
+@Injectable()
 export class RoadEventCompletedHandler {
+  private readonly logger = new Logger(RoadEventCompletedHandler.name);
+
   constructor(
     private readonly incidentRepository: IncidentRepository,
     private readonly notifier: NotifierService,
   ) {}
 
-  @EventPattern('road.event.completed')
-  async handle(evt: RoadEventCompletedEvent) {
-    Logger.log('Received event:', evt);
+  async handle(evt: RoadEventCompletedEvent): Promise<void> {
+    this.logger.log('Received road.event.completed', JSON.stringify(evt));
 
     const referenceNo = await this.notifier.notify(
       evt.eventType,
@@ -27,6 +27,7 @@ export class RoadEventCompletedHandler {
       eventId: evt.eventId,
       reportNumber: referenceNo,
     });
-    Logger.log('Saved incident', evt.eventId, saved.id);
+
+    this.logger.log('Saved incident', saved.incidentId);
   }
 }

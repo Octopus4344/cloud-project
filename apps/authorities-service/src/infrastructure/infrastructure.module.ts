@@ -1,37 +1,22 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule } from '@nestjs/config';
 
-import { IncidentEntity } from '../domain/entities/incident.entity';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { IncidentRepository } from './repositories/incident.repository';
 import { RoadEventCompletedHandler } from './event-handlers/road-event-completed.handler';
+import { GetStatisticsHandler } from './query-handlers/get-statistics.handler';
 import { NotifierService } from './services/notifier.service';
+import { SqsConsumerService } from './messaging/sqs-consumer.service';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    CqrsModule,
-    TypeOrmModule.forFeature([IncidentEntity]),
-    ClientsModule.registerAsync([
-      {
-        name: 'RMQ_AUTHORITIES_BUS',
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [config.get<string>('RABBITMQ_URL')!],
-            queueOptions: { durable: true },
-            queue: 'road-event-queue',
-          },
-        }),
-      },
-    ]),
+  imports: [ConfigModule.forRoot({ isGlobal: true }), CqrsModule],
+  providers: [
+    IncidentRepository,
+    RoadEventCompletedHandler,
+    GetStatisticsHandler,
+    NotifierService,
+    SqsConsumerService,
   ],
-  controllers: [RoadEventCompletedHandler],
-  providers: [IncidentRepository, RoadEventCompletedHandler, NotifierService],
   exports: [IncidentRepository, RoadEventCompletedHandler],
 })
 export class InfrastructureModule {}

@@ -1,7 +1,7 @@
 export class RoadEventCompletedEvent {
   constructor(
-    public readonly eventId: number,
-    public readonly userId: number,
+    public readonly eventId: string,
+    public readonly userId: string,
     public readonly eventType: string,
     public readonly latitude: number,
     public readonly longitude: number,

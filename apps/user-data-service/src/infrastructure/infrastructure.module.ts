@@ -1,36 +1,22 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule } from '@nestjs/config';
 
 import { UserRepository } from './repositories/user.repository';
-import { UserEntity } from '../domain/entities/user.entity';
 import { RoadEventCreatedHandler } from './event-handlers/road-event-created.handler';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SqsProducerService } from './messaging/sqs-producer.service';
+import { SqsConsumerService } from './messaging/sqs-consumer.service';
+import { CognitoService } from './services/cognito.service';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    CqrsModule,
-    TypeOrmModule.forFeature([UserEntity]),
-    ClientsModule.registerAsync([
-      {
-        name: 'RMQ_USERS_BUS',
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [config.get<string>('RABBITMQ_URL')!],
-            queueOptions: { durable: true },
-            queue: 'road-event-queue',
-          },
-        }),
-      },
-    ]),
+  imports: [ConfigModule.forRoot({ isGlobal: true }), CqrsModule],
+  providers: [
+    UserRepository,
+    RoadEventCreatedHandler,
+    SqsProducerService,
+    SqsConsumerService,
+    CognitoService,
   ],
-  controllers: [RoadEventCreatedHandler],
-  providers: [UserRepository, RoadEventCreatedHandler],
-  exports: [UserRepository, RoadEventCreatedHandler],
+  exports: [UserRepository, RoadEventCreatedHandler, CognitoService],
 })
 export class InfrastructureModule {}

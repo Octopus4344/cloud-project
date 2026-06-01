@@ -1,23 +1,13 @@
 variable "aws_region" {
-  description = ""
+  description = "AWS region to deploy resources in"
   type        = string
-  default     = "us-east-1"
+  default     = "eu-north-1"
 }
 
 variable "environment" {
-  description = ""
+  description = "Deployment environment (dev, staging, prod)"
   type        = string
   default     = "dev"
 }
 
-variable "supabase_db_url" {
-  description = ""
-  type        = string
-  sensitive   = true
-}
 
-variable "rabbitmq_url" {
-  description = ""
-  type        = string
-  sensitive   = true
-}

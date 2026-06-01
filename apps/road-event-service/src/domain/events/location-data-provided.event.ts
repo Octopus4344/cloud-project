@@ -1,6 +1,6 @@
 export class LocationDataProvidedEvent {
   constructor(
-    public readonly eventId: number,
+    public readonly eventId: string,
     public readonly latitude: number,
     public readonly longitude: number,
   ) {}

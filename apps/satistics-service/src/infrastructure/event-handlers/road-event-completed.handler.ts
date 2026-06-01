@@ -1,20 +1,16 @@
-import { ClientProxy, EventPattern } from '@nestjs/microservices';
-import { Controller, Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 import { RoadEventCompletedEvent } from '../../domain/events/road-event-completed.event';
-import { Column, CreateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { RoadEventType } from '../../domain/enums/road-event-type.enum';
 
-
-@Controller()
+@Injectable()
 export class RoadEventCompletedHandler {
-  constructor(
-    private readonly statRepository: StatisticsRepository,
-  ) {}
+  private readonly logger = new Logger(RoadEventCompletedHandler.name);
 
-  @EventPattern('road.event.completed')
-  async handle(evt: RoadEventCompletedEvent) {
-    Logger.log('Received event:', evt);
+  constructor(private readonly statRepository: StatisticsRepository) {}
+
+  async handle(evt: RoadEventCompletedEvent): Promise<void> {
+    this.logger.log('Received road.event.completed', JSON.stringify(evt));
 
     const saved = await this.statRepository.save({
       userId: evt.userId,
@@ -23,9 +19,9 @@ export class RoadEventCompletedHandler {
       longitude: evt.longitude,
       userName: evt.name,
       userLastName: evt.lastName,
-      birthDate: evt.birthDate,
-    })
+      birthDate: evt.birthDate as any,
+    });
 
-    Logger.log('Saved event stat', evt.eventId, saved.id)
+    this.logger.log('Saved statistics record', saved.statId);
   }
 }
