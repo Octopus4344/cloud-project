@@ -232,19 +232,34 @@ resource "aws_lb_target_group" "user_location_service" {
   tags = { Environment = var.environment }
 }
 
+resource "aws_lb_target_group" "frontend" {
+  name        = "road-events-frontend-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+
+  health_check {
+    enabled             = true
+    interval            = 30
+    path                = "/"
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    matcher             = "200-399"
+  }
+
+  tags = { Environment = var.environment }
+}
+
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
-    type = "fixed-response"
-
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "Welcome to Road Events Microservices API"
-      status_code  = "200"
-    }
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend.arn
   }
 }
 
@@ -315,5 +330,19 @@ resource "aws_lb_listener_rule" "user_location_service" {
 
   condition {
     path_pattern { values = ["/user-location*"] }
+  }
+}
+
+resource "aws_lb_listener_rule" "frontend" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 90
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend.arn
+  }
+
+  condition {
+    path_pattern { values = ["/app*", "/"] }
   }
 }

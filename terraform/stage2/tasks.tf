@@ -178,12 +178,42 @@ resource "aws_ecs_task_definition" "authorities_service" {
       { name = "SQS_AUTHORITIES_QUEUE_URL", value = aws_sqs_queue.authorities.url },
       { name = "SNS_ROAD_EVENTS_COMPLETED_ARN", value = aws_sns_topic.road_events_completed.arn },
       { name = "DYNAMODB_INCIDENTS_TABLE", value = aws_dynamodb_table.incidents.name },
+      { name = "S3_ARCHIVE_BUCKET", value = aws_s3_bucket.road_events_archive.bucket },
     ]
 
     logConfiguration = {
       logDriver = "awslogs"
       options = {
         "awslogs-group"         = aws_cloudwatch_log_group.authorities_service.name
+        "awslogs-region"        = var.aws_region
+        "awslogs-stream-prefix" = "ecs"
+      }
+    }
+  }])
+
+  tags = { Environment = var.environment }
+}
+
+resource "aws_ecs_task_definition" "frontend" {
+  family                   = "road-events-frontend"
+  requires_compatibilities = ["EC2"]
+  network_mode             = "awsvpc"
+  cpu                      = 256
+  memory                   = 512
+  execution_role_arn       = local.ecs_task_execution_role_arn
+  task_role_arn            = local.ecs_task_role_arn
+
+  container_definitions = jsonencode([{
+    name      = "road-events-frontend"
+    image     = "${aws_ecr_repository.frontend.repository_url}:latest"
+    essential = true
+
+    portMappings = [{ containerPort = 80, hostPort = 80 }]
+
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = aws_cloudwatch_log_group.frontend.name
         "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "ecs"
       }

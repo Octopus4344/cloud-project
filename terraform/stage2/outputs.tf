@@ -27,6 +27,11 @@ output "authorities_service_url" {
   value = "http://${aws_lb.main.dns_name}/authorities"
 }
 
+output "frontend_url" {
+  value       = "http://${aws_lb.main.dns_name}/app"
+  description = "Frontend URL"
+}
+
 output "cognito_user_pool_id" {
   value       = aws_cognito_user_pool.main.id
   description = "Cognito User Pool ID"
@@ -95,4 +100,8 @@ output "ecr_statistics_service_repository_url" {
 
 output "ecr_authorities_service_repository_url" {
   value = aws_ecr_repository.authorities_service.repository_url
+}
+
+output "ecr_frontend_repository_url" {
+  value = aws_ecr_repository.frontend.repository_url
 }

@@ -6,6 +6,7 @@ import { IncidentRepository } from './repositories/incident.repository';
 import { RoadEventCompletedHandler } from './event-handlers/road-event-completed.handler';
 import { GetStatisticsHandler } from './query-handlers/get-statistics.handler';
 import { NotifierService } from './services/notifier.service';
+import { ArchiveService } from './services/archive.service';
 import { SqsConsumerService } from './messaging/sqs-consumer.service';
 
 @Module({
@@ -15,8 +16,9 @@ import { SqsConsumerService } from './messaging/sqs-consumer.service';
     RoadEventCompletedHandler,
     GetStatisticsHandler,
     NotifierService,
+    ArchiveService,
     SqsConsumerService,
   ],
-  exports: [IncidentRepository, RoadEventCompletedHandler],
+  exports: [IncidentRepository, RoadEventCompletedHandler, ArchiveService],
 })
 export class InfrastructureModule {}

@@ -31,3 +31,8 @@ resource "aws_cloudwatch_log_group" "lambda_archive" {
   name              = "/aws/lambda/archive-road-event"
   retention_in_days = 30
 }
+
+resource "aws_cloudwatch_log_group" "frontend" {
+  name              = "/ecs/road-events-frontend"
+  retention_in_days = 30
+}

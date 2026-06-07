@@ -71,3 +71,17 @@ resource "aws_ecr_repository" "user_location_service" {
     create_before_destroy = true
   }
 }
+
+resource "aws_ecr_repository" "frontend" {
+  name                 = "road-events-frontend"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}

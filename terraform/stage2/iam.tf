@@ -92,6 +92,20 @@ resource "aws_iam_role_policy" "ecs_task_permissions" {
       {
         Effect = "Allow"
         Action = [
+          "s3:ListBucket"
+        ]
+        Resource = aws_s3_bucket.road_events_archive.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject"
+        ]
+        Resource = "${aws_s3_bucket.road_events_archive.arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "cognito-idp:AdminCreateUser",
           "cognito-idp:AdminSetUserPassword"
         ]

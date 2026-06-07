@@ -141,3 +141,31 @@ resource "aws_ecs_service" "authorities_service" {
 
   tags = { Environment = var.environment }
 }
+
+resource "aws_ecs_service" "frontend" {
+  name            = "road-events-frontend"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.frontend.arn
+  desired_count   = 1
+
+  capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.ec2.name
+    weight            = 1
+  }
+
+  network_configuration {
+    security_groups  = [aws_security_group.ecs_tasks.id]
+    subnets          = aws_subnet.private[*].id
+    assign_public_ip = false
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.frontend.arn
+    container_name   = "road-events-frontend"
+    container_port   = 80
+  }
+
+  depends_on = [aws_lb_listener.http, aws_ecs_cluster_capacity_providers.main]
+
+  tags = { Environment = var.environment }
+}

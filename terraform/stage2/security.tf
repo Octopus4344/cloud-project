@@ -15,6 +15,14 @@ resource "aws_security_group" "ecs_tasks" {
     description     = "Allow traffic from ALB to container ports"
   }
 
+  ingress {
+    protocol        = "tcp"
+    from_port       = 80
+    to_port         = 80
+    security_groups = [aws_security_group.alb.id]
+    description     = "Allow traffic from ALB to frontend port"
+  }
+
   egress {
     protocol    = "-1"
     from_port   = 0

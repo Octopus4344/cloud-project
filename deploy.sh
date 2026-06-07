@@ -192,6 +192,7 @@ ROAD_EVENT_SERVICE_REPO=$(terraform output -raw ecr_road_event_service_repositor
 STATISTICS_SERVICE_REPO=$(terraform output -raw ecr_statistics_service_repository_url)
 USER_DATA_SERVICE_REPO=$(terraform output -raw ecr_user_data_service_repository_url)
 USER_LOCATION_SERVICE_REPO=$(terraform output -raw ecr_user_location_service_repository_url)
+FRONTEND_REPO=$(terraform output -raw ecr_frontend_repository_url)
 
 # Logowanie do ECR
 echo "${YELLOW}Logowanie do Amazon ECR...${NC}"
@@ -240,6 +241,22 @@ build_and_push satistics-service $STATISTICS_SERVICE_REPO
 build_and_push user-data-service $USER_DATA_SERVICE_REPO
 build_and_push user-location-service $USER_LOCATION_SERVICE_REPO
 
+echo "${YELLOW}Budowanie i wypychanie road-events-frontend...${NC}"
+docker_cleanup true
+DOCKER_BUILDKIT=1 docker build \
+  --no-cache \
+  --pull \
+  --force-rm \
+  --platform linux/amd64 \
+  --build-arg BUILDKIT_INLINE_CACHE=0 \
+  --build-arg VITE_API_BASE=http://$(terraform output -raw alb_dns_name) \
+  -t "${FRONTEND_REPO}:latest" \
+  -f $ROOT_DIR/frontend/Dockerfile \
+  $ROOT_DIR
+docker push "${FRONTEND_REPO}:latest"
+docker rmi "${FRONTEND_REPO}:latest"
+docker_cleanup true
+
 # Aktualizacja ECS usług, aby użyć nowych obrazów
 echo "${GREEN}Aktualizacja usług ECS...${NC}"
 cd ../../terraform/stage2
@@ -248,8 +265,19 @@ terraform apply \
   -var="environment=$ENVIRONMENT" \
   -auto-approve
 
+# Wymuś nowy rollout usług ECS, aby pobrały świeży tag :latest
+echo "${YELLOW}Wymuszam nowy deployment usług ECS...${NC}"
+for SERVICE in authorities-service road-event-service satistics-service user-data-service user-location-service road-events-frontend; do
+  aws ecs update-service \
+    --cluster microservices-cluster \
+    --service "$SERVICE" \
+    --region "$AWS_REGION" \
+    --force-new-deployment > /dev/null
+done
+
 # Pobranie adresu URL load balancera
 ALB_DNS=$(terraform output -raw alb_dns_name)
+FRONTEND_URL=$(terraform output -raw frontend_url)
 
 # Finalne czyszczenie po deploymencie
 echo "${YELLOW}Finalne czyszczenie wszystkich zasobów Docker...${NC}"
@@ -263,4 +291,5 @@ echo "- Road Event Service: http://$ALB_DNS/road-events"
 echo "- Statistics Service: http://$ALB_DNS/statistics"
 echo "- User Data Service: http://$ALB_DNS/user-data"
 echo "- User Location Service: http://$ALB_DNS/user-location"
+echo "- Frontend: $FRONTEND_URL"
 

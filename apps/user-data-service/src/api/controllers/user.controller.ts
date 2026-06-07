@@ -1,5 +1,6 @@
 import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { LoginDto } from '../dto/login.dto';
 import { UserRepository } from '../../infrastructure/repositories/user.repository';
 import { CognitoService } from '../../infrastructure/services/cognito.service';
 
@@ -24,6 +25,15 @@ export class UserController {
       return { id: user.userId };
     } catch (e) {
       throw new BadRequestException('User had not been created');
+    }
+  }
+
+  @Post('login')
+  async login(@Body() loginDto: LoginDto) {
+    try {
+      return await this.cognitoService.login(loginDto.email, loginDto.password);
+    } catch {
+      throw new BadRequestException('Invalid email or password');
     }
   }
 }

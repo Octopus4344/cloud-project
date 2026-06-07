@@ -4,6 +4,7 @@ import {
   CognitoIdentityProviderClient,
   AdminCreateUserCommand,
   AdminSetUserPasswordCommand,
+  InitiateAuthCommand,
   MessageActionType,
 } from '@aws-sdk/client-cognito-identity-provider';
 
@@ -57,5 +58,37 @@ export class CognitoService {
     );
 
     return sub;
+  }
+
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ accessToken: string; idToken: string; refreshToken?: string }> {
+    const clientId = this.config.get<string>('COGNITO_APP_CLIENT_ID');
+    if (!clientId) {
+      throw new Error('COGNITO_APP_CLIENT_ID is not configured');
+    }
+
+    const result = await this.client.send(
+      new InitiateAuthCommand({
+        AuthFlow: 'USER_PASSWORD_AUTH',
+        ClientId: clientId,
+        AuthParameters: {
+          USERNAME: email,
+          PASSWORD: password,
+        },
+      }),
+    );
+
+    const auth = result.AuthenticationResult;
+    if (!auth?.AccessToken || !auth?.IdToken) {
+      throw new Error('Authentication failed: Cognito did not return tokens');
+    }
+
+    return {
+      accessToken: auth.AccessToken,
+      idToken: auth.IdToken,
+      refreshToken: auth.RefreshToken,
+    };
   }
 }

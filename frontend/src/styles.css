@@ -1,0 +1,165 @@
+:root {
+  color-scheme: light;
+  --bg: #f2f4f8;
+  --panel: #ffffff;
+  --ink: #172235;
+  --muted: #5a6475;
+  --line: #d5dbe6;
+  --ok: #2f855a;
+  --err: #c53030;
+  --brand: #0f766e;
+  --brand-soft: #dff6f4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 15% 10%, #dcf3ff 0%, transparent 40%),
+    radial-gradient(circle at 90% 90%, #e5ffd9 0%, transparent 35%),
+    var(--bg);
+  color: var(--ink);
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.hero {
+  background: linear-gradient(120deg, #0f766e 0%, #0b4f8a 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 12px 30px rgba(10, 35, 67, 0.22);
+}
+
+.hero h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+.hero p {
+  margin: 0;
+  opacity: 0.95;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  margin-bottom: 16px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card h2 {
+  margin: 0 0 4px;
+  font-size: 19px;
+}
+
+input,
+select,
+textarea,
+button {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+label {
+  font-size: 13px;
+  color: var(--muted);
+  display: grid;
+  gap: 6px;
+}
+
+button {
+  background: var(--brand);
+  color: #fff;
+  border: 0;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+li {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  background: #fbfcff;
+}
+
+small {
+  color: var(--muted);
+}
+
+.inline-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.banner {
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.banner.ok {
+  background: #e6ffef;
+  color: var(--ok);
+}
+
+.banner.err {
+  background: #ffecec;
+  color: var(--err);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 14px;
+  }
+
+  .hero h1 {
+    font-size: 24px;
+  }
+}
