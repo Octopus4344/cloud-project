@@ -15,9 +15,9 @@ export class ArchiveService {
     });
   }
 
-  async listRecent(limit = 20): Promise<
-    Array<{ key: string; lastModified: string; size: number }>
-  > {
+  async listRecent(
+    limit = 20,
+  ): Promise<Array<{ key: string; lastModified: string; size: number }>> {
     const bucket = this.config.get<string>('S3_ARCHIVE_BUCKET');
     if (!bucket) {
       return [];

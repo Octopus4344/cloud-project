@@ -19,10 +19,9 @@ body {
   margin: 0;
   background:
     radial-gradient(circle at 15% 10%, #dcf3ff 0%, transparent 40%),
-    radial-gradient(circle at 90% 90%, #e5ffd9 0%, transparent 35%),
-    var(--bg);
+    radial-gradient(circle at 90% 90%, #e5ffd9 0%, transparent 35%), var(--bg);
   color: var(--ink);
-  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
 }
 
 .page {
@@ -100,7 +99,9 @@ button {
   border: 0;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    opacity 0.2s ease;
 }
 
 button:hover:not(:disabled) {

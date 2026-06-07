@@ -185,7 +185,15 @@ export function App() {
       <section className="grid">
         <article className="card">
           <h2>2. Register</h2>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+          <input
+           
+           
+           
+         
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+          />
           <input
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -215,11 +223,15 @@ export function App() {
           <button disabled={busy || !normalizedApi} onClick={register}>
             Create user
           </button>
-        </article>
+        </art
+            icle>
+          
 
         <article className="card">
           <h2>3. Login</h2>
-          <p>Logs in through /user-data/users/login (Cognito under the hood).</p>
+          <p>
+            Logs in through /user-data/users/login (Cognito under the hood).
+          </p>
           <button disabled={busy || !normalizedApi} onClick={login}>
             Login
           </button>
@@ -251,15 +263,25 @@ export function App() {
             onChange={(e) => setLatitude(e.target.value)}
             placeholder="Latitude"
           />
+           
+           
+          
           <input
             value={longitude}
-            onChange={(e) => setLongitude(e.target.value)}
+            onChange (
+           ={(e) => setLongitude(e.target.value)}
+          )
             placeholder="Longitude"
           />
-          <button disabled={busy || !token || !normalizedApi} onClick={publishEvent}>
+          <button
+            disabled={busy || !token || !normalizedApi}
+            onClick={publishEvent}
+          >
             Publish event
           </button>
-          {eventId ? <p className="inline-note">Last event: {eventId}</p> : null}
+          {eventId ? (
+            <p className="inline-note">Last event: {eventId}</p>
+          ) : null}
         </article>
       </section>
 

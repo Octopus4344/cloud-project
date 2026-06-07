@@ -11,6 +11,8 @@ export class ArchiveController {
     @Query('limit') limit?: string,
   ): Promise<ArchiveResponseDto[]> {
     const parsedLimit = limit ? Number(limit) : 20;
-    return this.archiveService.listRecent(Number.isNaN(parsedLimit) ? 20 : parsedLimit);
+    return this.archiveService.listRecent(
+      Number.isNaN(parsedLimit) ? 20 : parsedLimit,
+    );
   }
 }
