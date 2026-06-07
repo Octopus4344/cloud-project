@@ -21,7 +21,10 @@ export class CognitoService {
     });
   }
 
-  async registerUser(const userPool if (!userPoolId)    this.logger.warn(
+  async registerUser(email: string, password: string): Promise<string | null> {
+    const userPoolId = this.config.get<string>('COGNITO_USER_POOL_ID');
+    if (!userPoolId) {
+      this.logger.warn(
         'COGNITO_USER_POOL_ID not set – skipping Cognito registration',
       );
       return null;
