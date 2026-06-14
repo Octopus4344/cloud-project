@@ -16,6 +16,8 @@ export class ReportsController {
     @Query('limit') limit?: string,
   ): Promise<Array<{ key: string; lastModified: string; size: number }>> {
     const parsedLimit = limit ? Number(limit) : 20;
-    return this.reportService.listReports(Number.isNaN(parsedLimit) ? 20 : parsedLimit);
+    return this.reportService.listReports(
+      Number.isNaN(parsedLimit) ? 20 : parsedLimit,
+    );
   }
 }

@@ -35,7 +35,10 @@ export class ReportService {
     }
 
     const raw = await this.statisticsRepository.countByType();
-    const byType = raw.map((r) => ({ type: r.type, count: parseInt(r.count, 10) }));
+    const byType = raw.map((r) => ({
+      type: r.type,
+      count: parseInt(r.count, 10),
+    }));
     const totalEvents = byType.reduce((acc, item) => acc + item.count, 0);
     const generatedAt = new Date().toISOString();
     const reportKey = `reports/statistics-report-${Date.now()}.json`;
@@ -61,7 +64,9 @@ export class ReportService {
     return { reportKey, generatedAt, totalEvents, byType };
   }
 
-  async listReports(limit = 20): Promise<Array<{ key: string; lastModified: string; size: number }>> {
+  async listReports(
+    limit = 20,
+  ): Promise<Array<{ key: string; lastModified: string; size: number }>> {
     const bucket = this.config.get<string>('S3_ARCHIVE_BUCKET');
     if (!bucket) {
       return [];

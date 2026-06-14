@@ -226,15 +226,7 @@ export function App() {
         <article className="card">
           <h2>2. Register</h2>
           <input
-           
-           
-           
-         
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-          />
-          <input
+            nput
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
@@ -362,10 +354,12 @@ export function App() {
           </button>
           {lastReport ? (
             <div className="inline-note">
-              Last report: {lastReport.reportKey} (events: {lastReport.totalEvents})
+              Last report: {lastReport.reportKey} (events:{' '}
+              {lastReport.totalEvents})
             </div>
           ) : null}
           <ul>
+            {' '}
             {reports.map((item) => (
               <li key={item.key}>
                 <div>{item.key}</div>
