@@ -10,6 +10,14 @@ type RoadEventType =
 
 type StatsItem = { type: string; count: number };
 type ArchiveItem = { key: string; lastModified: string; size: number };
+type ReportItem = { key: string; lastModified: string; size: number };
+
+type ReportResult = {
+  reportKey: string;
+  generatedAt: string;
+  totalEvents: number;
+  byType: Array<{ type: string; count: number }>;
+};
 
 type LoginResult = {
   accessToken: string;
@@ -44,6 +52,8 @@ export function App() {
   const [eventId, setEventId] = useState('');
   const [stats, setStats] = useState<StatsItem[]>([]);
   const [archive, setArchive] = useState<ArchiveItem[]>([]);
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [lastReport, setLastReport] = useState<ReportResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -160,6 +170,36 @@ export function App() {
     }
   };
 
+  const generateReport = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      const res = await callApi<ReportResult>('/statistics/reports', {
+        method: 'POST',
+      });
+      setLastReport(res);
+      setMessage(`Report generated: ${res.reportKey}`);
+    } catch (e: any) {
+      setError(e.message || 'Report generation failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const fetchReports = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      const res = await callApi<ReportItem[]>('/statistics/reports?limit=20');
+      setReports(res);
+      setMessage('Reports list refreshed');
+    } catch (e: any) {
+      setError(e.message || 'Reports fetch failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="page">
       <header className="hero">
@@ -223,9 +263,7 @@ export function App() {
           <button disabled={busy || !normalizedApi} onClick={register}>
             Create user
           </button>
-        </art
-            icle>
-          
+        </article>
 
         <article className="card">
           <h2>3. Login</h2>
@@ -263,14 +301,9 @@ export function App() {
             onChange={(e) => setLatitude(e.target.value)}
             placeholder="Latitude"
           />
-           
-           
-          
           <input
             value={longitude}
-            onChange (
-           ={(e) => setLongitude(e.target.value)}
-          )
+            onChange={(e) => setLongitude(e.target.value)}
             placeholder="Longitude"
           />
           <button
@@ -307,6 +340,33 @@ export function App() {
           </button>
           <ul>
             {archive.map((item) => (
+              <li key={item.key}>
+                <div>{item.key}</div>
+                <small>
+                  {item.lastModified || 'n/a'} | {item.size} bytes
+                </small>
+              </li>
+            ))}
+          </ul>
+        </article>
+      </section>
+
+      <section className="grid">
+        <article className="card">
+          <h2>7. Statistics Reports (S3)</h2>
+          <button disabled={busy || !normalizedApi} onClick={generateReport}>
+            Generate report
+          </button>
+          <button disabled={busy || !normalizedApi} onClick={fetchReports}>
+            Refresh reports list
+          </button>
+          {lastReport ? (
+            <div className="inline-note">
+              Last report: {lastReport.reportKey} (events: {lastReport.totalEvents})
+            </div>
+          ) : null}
+          <ul>
+            {reports.map((item) => (
               <li key={item.key}>
                 <div>{item.key}</div>
                 <small>

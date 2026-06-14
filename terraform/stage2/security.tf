@@ -1,7 +1,3 @@
-# ============================================================
-# SECURITY GROUPS
-# ============================================================
-
 resource "aws_security_group" "ecs_tasks" {
   name        = "microservices-ecs-tasks-sg"
   description = "Allow inbound access from ALB only"

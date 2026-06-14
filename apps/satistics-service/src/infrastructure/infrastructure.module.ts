@@ -6,6 +6,7 @@ import { StatisticsRepository } from './repositories/statistics.repository';
 import { RoadEventCompletedHandler } from './event-handlers/road-event-completed.handler';
 import { GetStatisticsHandler } from './query-handlers/get-statistics.handler';
 import { SqsConsumerService } from './messaging/sqs-consumer.service';
+import { ReportService } from './services/report.service';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), CqrsModule],
@@ -13,8 +14,9 @@ import { SqsConsumerService } from './messaging/sqs-consumer.service';
     StatisticsRepository,
     RoadEventCompletedHandler,
     GetStatisticsHandler,
+    ReportService,
     SqsConsumerService,
   ],
-  exports: [StatisticsRepository, RoadEventCompletedHandler],
+  exports: [StatisticsRepository, RoadEventCompletedHandler, ReportService],
 })
 export class InfrastructureModule {}

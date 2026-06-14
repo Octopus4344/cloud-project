@@ -83,25 +83,25 @@ output "dynamodb_statistics_table" {
 }
 
 output "ecr_road_event_service_repository_url" {
-  value = aws_ecr_repository.road_event_service.repository_url
+  value = aws_ecr_repository.service["road_event_service"].repository_url
 }
 
 output "ecr_user_data_service_repository_url" {
-  value = aws_ecr_repository.user_data_service.repository_url
+  value = aws_ecr_repository.service["user_data_service"].repository_url
 }
 
 output "ecr_user_location_service_repository_url" {
-  value = aws_ecr_repository.user_location_service.repository_url
+  value = aws_ecr_repository.service["user_location_service"].repository_url
 }
 
 output "ecr_statistics_service_repository_url" {
-  value = aws_ecr_repository.statistics_service.repository_url
+  value = aws_ecr_repository.service["statistics_service"].repository_url
 }
 
 output "ecr_authorities_service_repository_url" {
-  value = aws_ecr_repository.authorities_service.repository_url
+  value = aws_ecr_repository.service["authorities_service"].repository_url
 }
 
 output "ecr_frontend_repository_url" {
-  value = aws_ecr_repository.frontend.repository_url
+  value = aws_ecr_repository.service["frontend"].repository_url
 }

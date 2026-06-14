@@ -71,7 +71,7 @@ resource "aws_lambda_function" "archive_road_event" {
     }
   }
 
-  depends_on = [aws_cloudwatch_log_group.lambda_archive]
+  depends_on = [aws_cloudwatch_log_group.service["lambda_archive"]]
 
   tags = {
     Environment = var.environment

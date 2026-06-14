@@ -7,11 +7,7 @@ const s3 = new S3Client({
 });
 const BUCKET = process.env.ARCHIVE_BUCKET;
 
-/**
- * Lambda function triggered by SQS (archive-queue).
- * Messages originate from SNS (road-events-completed topic) and arrive
- * wrapped in the SNS notification envelope.
- */
+
 exports.handler = async (event) => {
   const results = await Promise.allSettled(
     event.Records.map((record) => processRecord(record)),
@@ -19,8 +15,7 @@ exports.handler = async (event) => {
 
   const failures = results.filter((r) => r.status === 'rejected');
   if (failures.length > 0) {
-    console.error(`${failures.length} records failed to archive`);
-    // Re-throw so SQS retries the batch (messages will land in DLQ after maxReceiveCount)
+    console.error(`${failures.length} records failed to archive`); maxReceiveCount)
     throw new Error(`Partial batch failure: ${failures.length} records`);
   }
 };
@@ -34,7 +29,6 @@ async function processRecord(record) {
     return;
   }
 
-  // Unwrap SNS envelope when raw message delivery is disabled
   if (body.Type === 'Notification') {
     try {
       body = JSON.parse(body.Message);

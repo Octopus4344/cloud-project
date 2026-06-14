@@ -13,7 +13,7 @@ resource "aws_ecs_task_definition" "road_event_service" {
 
   container_definitions = jsonencode([{
     name      = "road-event-service"
-    image     = "${aws_ecr_repository.road_event_service.repository_url}:latest"
+    image     = "${aws_ecr_repository.service["road_event_service"].repository_url}:latest"
     essential = true
 
     portMappings = [{ containerPort = 3000, hostPort = 3000 }]
@@ -34,7 +34,7 @@ resource "aws_ecs_task_definition" "road_event_service" {
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.road_event_service.name
+        "awslogs-group"         = aws_cloudwatch_log_group.service["road_event_service"].name
         "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "ecs"
       }
@@ -55,7 +55,7 @@ resource "aws_ecs_task_definition" "user_data_service" {
 
   container_definitions = jsonencode([{
     name      = "user-data-service"
-    image     = "${aws_ecr_repository.user_data_service.repository_url}:latest"
+    image     = "${aws_ecr_repository.service["user_data_service"].repository_url}:latest"
     essential = true
 
     portMappings = [{ containerPort = 3001, hostPort = 3001 }]
@@ -73,7 +73,7 @@ resource "aws_ecs_task_definition" "user_data_service" {
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.user_data_service.name
+        "awslogs-group"         = aws_cloudwatch_log_group.service["user_data_service"].name
         "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "ecs"
       }
@@ -94,7 +94,7 @@ resource "aws_ecs_task_definition" "user_location_service" {
 
   container_definitions = jsonencode([{
     name      = "user-location-service"
-    image     = "${aws_ecr_repository.user_location_service.repository_url}:latest"
+    image     = "${aws_ecr_repository.service["user_location_service"].repository_url}:latest"
     essential = true
 
     portMappings = [{ containerPort = 3004, hostPort = 3004 }]
@@ -110,7 +110,7 @@ resource "aws_ecs_task_definition" "user_location_service" {
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.user_location_service.name
+        "awslogs-group"         = aws_cloudwatch_log_group.service["user_location_service"].name
         "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "ecs"
       }
@@ -131,7 +131,7 @@ resource "aws_ecs_task_definition" "statistics_service" {
 
   container_definitions = jsonencode([{
     name      = "statistics-service"
-    image     = "${aws_ecr_repository.statistics_service.repository_url}:latest"
+    image     = "${aws_ecr_repository.service["statistics_service"].repository_url}:latest"
     essential = true
 
     portMappings = [{ containerPort = 3005, hostPort = 3005 }]
@@ -141,12 +141,13 @@ resource "aws_ecs_task_definition" "statistics_service" {
       { name = "AWS_REGION", value = var.aws_region },
       { name = "SQS_STATISTICS_QUEUE_URL", value = aws_sqs_queue.statistics.url },
       { name = "DYNAMODB_STATISTICS_TABLE", value = aws_dynamodb_table.statistics.name },
+      { name = "S3_ARCHIVE_BUCKET", value = aws_s3_bucket.road_events_archive.bucket },
     ]
 
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.statistics_service.name
+        "awslogs-group"         = aws_cloudwatch_log_group.service["statistics_service"].name
         "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "ecs"
       }
@@ -167,7 +168,7 @@ resource "aws_ecs_task_definition" "authorities_service" {
 
   container_definitions = jsonencode([{
     name      = "authorities-service"
-    image     = "${aws_ecr_repository.authorities_service.repository_url}:latest"
+    image     = "${aws_ecr_repository.service["authorities_service"].repository_url}:latest"
     essential = true
 
     portMappings = [{ containerPort = 3006, hostPort = 3006 }]
@@ -184,7 +185,7 @@ resource "aws_ecs_task_definition" "authorities_service" {
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.authorities_service.name
+        "awslogs-group"         = aws_cloudwatch_log_group.service["authorities_service"].name
         "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "ecs"
       }
@@ -205,7 +206,7 @@ resource "aws_ecs_task_definition" "frontend" {
 
   container_definitions = jsonencode([{
     name      = "road-events-frontend"
-    image     = "${aws_ecr_repository.frontend.repository_url}:latest"
+    image     = "${aws_ecr_repository.service["frontend"].repository_url}:latest"
     essential = true
 
     portMappings = [{ containerPort = 80, hostPort = 80 }]
@@ -213,7 +214,7 @@ resource "aws_ecs_task_definition" "frontend" {
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.frontend.name
+        "awslogs-group"         = aws_cloudwatch_log_group.service["frontend"].name
         "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "ecs"
       }

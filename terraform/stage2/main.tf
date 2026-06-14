@@ -2,10 +2,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-# ============================================================
-# BASE DATA SOURCES
-# ============================================================
-
 data "aws_ami" "ecs_optimized" {
   most_recent = true
   owners      = ["amazon"]
@@ -16,7 +12,6 @@ data "aws_ami" "ecs_optimized" {
   }
 }
 
-# Pack the Lambda source from the local folder into a zip artifact Terraform can deploy.
 data "archive_file" "lambda_archive_func" {
   type        = "zip"
   source_dir  = "${path.module}/lambda/archive-road-event"
